@@ -7,13 +7,8 @@ window.app = (function(){
 	//#magical
 	app.value('$anchorScroll', angular.noop);
 
-	//stick a reference of the utility library to the app object so it's available everywhere.
-	app.dhUtil = dhUtil;
-
-	//NEEDED FOR AMD: THE DEPENDECIES LISTED BELOW (except for $routeProvider)
 	app.config(['$controllerProvider', '$compileProvider', '$filterProvider', '$provide','$animateProvider', '$httpProvider',
 	    function ($controllerProvider, $compileProvider, $filterProvider, $provide, $animateProvider, $httpProvider ) {
-	    	console.log('x')
 	    	app.$httpProvider = $httpProvider;
 
 			app.register = {
@@ -33,7 +28,7 @@ window.app = (function(){
 		);
 	}]);
 
-	angular.bootstrap(document, ['myApp']);
+	// angular.bootstrap(document, ['myApp']);
 
 	app.cachedDocInj = angular.element(document).injector();
 

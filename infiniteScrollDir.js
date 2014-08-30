@@ -1,7 +1,89 @@
 ﻿//python -m SimpleHTTPServer 8080
-(function (app) {
+(function (app) {app.run([function(){
+    app.register.factory('icemanForScrollAdjustService', ['timeoutMasterService', function (timeoutMasterService) {
+
+        return function($scrollArea,itemArray,getItemHeightFun,itemSelector,innerWrapSelector,operation,scrollContainerHeight,scrollContainerWidth,scrollHeight,elmHeight,scrollPos,icemanDoneFun,getAdjustment,columns){
+            // console.log(columns)
+            scrollContainerHeight = typeof scrollContainerHeight !== 'undefined' ? scrollContainerHeight : $scrollArea.outerHeight();
+            scrollContainerWidth = typeof scrollContainerWidth !== 'undefined' ? scrollContainerWidth : $scrollArea.outerWidth();
+            scrollHeight = typeof scrollHeight !== 'undefined' ? scrollHeight : $el.prop('scrollHeight');
+            scrollPos = typeof scrollPos !== 'undefined' ? scrollPos : dhUtil.getYOffset($el);
+            getAdjustment = typeof getAdjustment !== 'undefined' ? getAdjustment : function(){return 0;};
+            var total = 0;
+            var totalHeightOfItemsToPreserve = 0;
+            var scrollPosDistToScrollBottom = scrollHeight - scrollPos;
+
+            var count = 0;
+            for(var i = itemArray.length; i--; ){
+                // totalHeightOfItemsToPreserve += getItemHeightFun(i,itemArray);
+                var remainder = i % columns;
+                // console.log('remainder',remainder,'columns',columns)
+                if(remainder === 0){
+                    totalHeightOfItemsToPreserve += getItemHeightFun(i,itemArray)
+                }
+                count++;
+                if(totalHeightOfItemsToPreserve >scrollPosDistToScrollBottom){
+                    count += remainder;
+                    break;
+                }
+            }
+            var clone = $scrollArea.clone();
+            var itemsAboveScrollInClone = clone.find(itemSelector+':lt('+(itemArray.length - count)+')');
+            itemsAboveScrollInClone.remove();
+            clone.css({
+                'width':scrollContainerWidth,
+                'position':'absolute',
+                'z-index':9999,
+                // 'background':'rgba(255,0,0,.1)',
+                'overflow':'hidden',
+                'height':scrollContainerHeight,
+                'opacity':1
+
+            })
+            var adjustment = getAdjustment();
+
+            var innerWrapStyles = {
+                'position':'relative',
+                'top':((scrollPosDistToScrollBottom - totalHeightOfItemsToPreserve) - adjustment)/* - (scrollHeight - elmHeight) */
+            }
+            var $innerWrap = clone.find(innerWrapSelector);
+            if($innerWrap.length === 0){
+                $innerWrap = $('<div></div>');
+                $innerWrap.css(innerWrapStyles);
+                clone.wrapInner($innerWrap)
+            } else{
+                $innerWrap.css(innerWrapStyles);
+            }
+            $scrollArea.before(clone);
+            // $scrollArea.css('opacity',0);
+            clone.on('touchstart scroll',function(e){
+                e.preventDefault();
+                e.stopPropagation();
+            });
+            $scrollArea.on('scroll.iceLock',function(e){//not sure if this does anything
+                e.preventDefault();
+                e.stopPropagation();
+            })
+
+            var finishedFun = function(){
+                // $scrollArea.css('opacity','1');
+                clone.remove();
+                
+                $scrollArea.off('scroll.iceLock');
+                icemanDoneFun();
+            };
+
+            timeoutMasterService.manage(function(){
+                operation(function(icemanDoneCb){
+                    timeoutMasterService.manage(finishedFun,100)['catch'](finishedFun);
+                });
+            },100)['catch'](finishedFun);
+
+            return clone
+        };
+    }]);
     app.register.directive(
-        'infiniteScrollItemDir', ['pubSubService','screenReadyService',function(pubSubService,screenReadyService){
+        'infiniteScrollItemDir', ['screenReadyService',function(screenReadyService){
             return function($scope, $elm, attrs) {
                 if($scope[$scope.infiniteScrollScope.itemName]){
                     screenReadyService(function(){
@@ -41,41 +123,49 @@
             }
         };
     }); 
+
     app.register.directive(
         //http://stackoverflow.com/a/14426540/1242000
         'infinitizerDir', [
-            'pubSubService','screenReadyService','debounceService','$timeout','$interval','hubConnectionService','$q','$timeout','debounceMasterService','timeoutMasterService','icemanForScrollAdjustService','timeoutRecursiveService','$parse',
+            'screenReadyService','debounceService','$timeout','$interval','$q','$timeout','debounceMasterService','timeoutMasterService','icemanForScrollAdjustService','timeoutRecursiveService','$parse',
         function(
-            pubSubService,screenReadyService,debounceService,$timeout,$interval,hubConnectionService,$q,$timeout,debounceMasterService,timeoutMasterService,icemanForScrollAdjustService,timeoutRecursiveService,$parse
+            screenReadyService,debounceService,$timeout,$interval,$q,$timeout,debounceMasterService,timeoutMasterService,icemanForScrollAdjustService,timeoutRecursiveService,$parse
         ){
-        return {
-            restrict:'A',
-            transclude: 'element',
-            replace: true,
-            scope: true,
-            compile: function (tElement, tAttrs, transclude) {
-              var rpt = document.createAttribute('ng-repeat');
-              rpt.nodeValue = tAttrs.infinitizerDir;
-              tElement.find('.infinitizerItem')[0].attributes.setNamedItem(rpt);
-              // tElement[0].children[0].attributes.setNamedItem(rpt);
-              return function (scope, element, attr) {
-                var ngRepeatLikeStringSplit = attr.infinitizerDir.split(' in ');
-                var rhs = ngRepeatLikeStringSplit[1];
-                scope.infiniteScrollScope.itemName = ngRepeatLikeStringSplit[0]
-                scope.items = $parse(rhs)(scope);
-              }        
-            },
-            templateUrl:'basex/infinitizerPartial.html'
-        }
+            return {
+                restrict:'A',
+                transclude: 'element',
+                replace: true,
+                scope: true,
+                compile: function (tElement, tAttrs, transclude) {
+                    console.log('xx')
+                  var rpt = document.createAttribute('ng-repeat');
+                  rpt.nodeValue = tAttrs.infinitizerDir;
+                  tElement.find('.infinitizerItem')[0].attributes.setNamedItem(rpt);
+                  // tElement[0].children[0].attributes.setNamedItem(rpt);
+                  return function (scope, element, attr) {
+                    var ngRepeatLikeStringSplit = attr.infinitizerDir.split(' in ');
+                    var rhs = ngRepeatLikeStringSplit[1];
+                    scope.infiniteScrollScope.itemName = ngRepeatLikeStringSplit[0]
+                    scope.items = $parse(rhs)(scope);
+                  }        
+                },
+                // templateUrl:'basex/infinitizerPartial.html'
+                template:'<div infinite-scroll-dir >'+
+                    '<ul class="infinitizerResults">'+
+                        '<li class="infinitizerItem" infinite-scroll-item-dir transcope  >'+
+                        '</li>'+
+                    '</ul>'+
+                '</div>'
+            }
         }]
     );
 
 
     app.register.directive(
         'infiniteScrollDir', [
-            'pubSubService','screenReadyService','debounceService','$timeout','$interval','hubConnectionService','$q','$timeout','debounceMasterService','timeoutMasterService','icemanForScrollAdjustService','timeoutRecursiveService','$parse',
+            'screenReadyService','debounceService','$timeout','$interval','$q','$timeout','debounceMasterService','timeoutMasterService','icemanForScrollAdjustService','timeoutRecursiveService','$parse',
         function(
-            pubSubService,screenReadyService,debounceService,$timeout,$interval,hubConnectionService,$q,$timeout,debounceMasterService,timeoutMasterService,icemanForScrollAdjustService,timeoutRecursiveService,$parse
+            screenReadyService,debounceService,$timeout,$interval,$q,$timeout,debounceMasterService,timeoutMasterService,icemanForScrollAdjustService,timeoutRecursiveService,$parse
         ){
         debounceMasterServicex = debounceMasterService;
         timeoutMasterServicex = timeoutMasterService;
@@ -412,8 +502,9 @@
                         }
                         $scope.infinitizer.state.constraints.limit = quantityToRetreive;
                         var hubModel = $scope.infinitizer.config.assembleHubModel($scope.infinitizer.state.constraints,$scope.infinitizer.state);
-                        hubConnectionService.rpc(hubModel)
+                        $scope.infinitizer.config.callEndpoint(hubModel)
                         .then(function(response){
+                            console.log('response',response)
                             // console.log(response)
                             var processedResults;
                             if(typeof $scope.infinitizer.config.resultPathInResponse !== 'undefined'){
@@ -572,7 +663,7 @@
                                     amtItemsToFillDeficit:amtItemsToFillDeficit,
                                     numberToRequest:numberToRequest
                                 }*/
-                                if(Math.abs(elmBottomPos-scrollHeight) < containerHeight/3 && scrollHeight/* - adjustment*/ > containerHeight && $scope.infinitizer.state.resultsArray.length >= maxItems){
+                                if(Math.abs(elmBottomPos-scrollHeight) < containerHeight/2 && scrollHeight/* - adjustment*/ > containerHeight && $scope.infinitizer.state.resultsArray.length >= maxItems){
                                     killLosersAndAdjust();
                                 }
 
@@ -608,12 +699,12 @@
 
                     
                     //TODO make window resize adjustment
-                    pubSubService.subscribe('stickyPos-'+$scope.widgetNamespace,function(stickyPos){
-                        if(intialIsDone_fetchMoreIfNeeded){
-                            konsole.log('++++','stickyPos')
-                            // getHeights();
-                        }
-                    },$scope);
+                    // pubSubService.subscribe('stickyPos-'+$scope.widgetNamespace,function(stickyPos){
+                    //     if(intialIsDone_fetchMoreIfNeeded){
+                    //         konsole.log('++++','stickyPos')
+                    //         // getHeights();
+                    //     }
+                    // },$scope);
 
                     
 
@@ -872,4 +963,4 @@
 
         };
     }]);
-})(app);
+}]);})(app);

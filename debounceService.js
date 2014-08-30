@@ -1,4 +1,4 @@
-(function (app) {
+(function (app) {app.run([function(){
     app.register.factory('screenReadyService', ['$q', '$timeout', function ($q, $timeout) {
         //This service helps with the angular issue where you have to wrap directive guts in timeout if it has
         // on instantiation behavior... like getting an element's height when it appers.
@@ -216,4 +216,4 @@
 
         return timeoutRecursive;
     }]);
-})(app);
+}]);})(app);

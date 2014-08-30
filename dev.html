@@ -1,117 +1,136 @@
 <!doctype html>
-<!--[if IEMobile 7 ]>    <html class="no-js iem7"> <![endif]-->
-<!--[if (gt IEMobile 7)|!(IEMobile)]><!--> <html class="no-js"> <!--<![endif]-->
-  <head>
-    <meta charset="utf-8">
-    <title>DateHookup SPA</title>
-    <meta name="description" content="">
-    <meta name="HandheldFriendly" content="True">
-    <meta name="MobileOptimized" content="320">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, minimal-ui">
-    <script>
-        var ua = navigator.userAgent.toLowerCase();
-        var isAndroid = ua.indexOf("android") > -1; //&& ua.indexOf("mobile");
-        if(isAndroid) {
-            var viewport = document.querySelector("meta[name=viewport]");
-            viewport.setAttribute('content', 'width=device-width, initial-scale=1,maximum-scale=1.01')
-        }
+	<!--[if IEMobile 7 ]>    <html class="no-js iem7"> <![endif]-->
+	<!--[if (gt IEMobile 7)|!(IEMobile)]><!--> <html class="no-js"> <!--<![endif]-->
+	<head>
+		<meta charset="utf-8">
+		<title>DateHookup SPA</title>
+		<meta name="description" content="">
+		<meta name="HandheldFriendly" content="True">
+		<meta name="MobileOptimized" content="320">
+		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, minimal-ui">
+		<script>
+		    var ua = navigator.userAgent.toLowerCase();
+		    var isAndroid = ua.indexOf("android") > -1; //&& ua.indexOf("mobile");
+		    if(isAndroid) {
+		        var viewport = document.querySelector("meta[name=viewport]");
+		        viewport.setAttribute('content', 'width=device-width, initial-scale=1,maximum-scale=1.01')
+		    }
 
 
-    </script>
-    <script>
-//     function whackWebkitMatchesSelector() {
-//     var oldMatches = Element.prototype.webkitMatchesSelector
-    
-//     function newMatches(selector) {
-//         try {
-//             return oldMatches.call(this, selector)
-//         }
-//         catch (err) {
-//             return false
-//         }
-//     }
+		</script>
+		<script>
+		//     function whackWebkitMatchesSelector() {
+		//     var oldMatches = Element.prototype.webkitMatchesSelector
 
-//     Element.prototype.webkitMatchesSelector = newMatches
-// }
+		//     function newMatches(selector) {
+		//         try {
+		//             return oldMatches.call(this, selector)
+		//         }
+		//         catch (err) {
+		//             return false
+		//         }
+		//     }
 
-// whackWebkitMatchesSelector()
+		//     Element.prototype.webkitMatchesSelector = newMatches
+		// }
 
-    </script>
-<!--     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
- -->    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,minimal-ui" /> -->
-    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, target-densityDpi=device-dpi,minimal-ui" /> --><!-- densityDpi=device-dpi prevent ios keyboard screensize issues -->
+		// whackWebkitMatchesSelector()
 
-    <meta http-equiv="cleartype" content="on">
+		</script>
+		<!--     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0">
+		-->    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0,minimal-ui" /> -->
+		<!-- <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, target-densityDpi=device-dpi,minimal-ui" /> --><!-- densityDpi=device-dpi prevent ios keyboard screensize issues -->
 
-    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="img/touch/apple-touch-icon-144x144-precomposed.png">
-    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="img/touch/apple-touch-icon-114x114-precomposed.png">
-    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="img/touch/apple-touch-icon-72x72-precomposed.png">
-    <link rel="apple-touch-icon-precomposed" href="img/touch/apple-touch-icon-57x57-precomposed.png">
-    <link rel="shortcut icon" href="img/touch/apple-touch-icon.png">
+		<meta http-equiv="cleartype" content="on">
 
-    <!-- Tile icon for Win8 (144x144 + tile color) -->
-    <meta name="msapplication-TileImage" content="img/touch/apple-touch-icon-144x144-precomposed.png">
-    <meta name="msapplication-TileColor" content="#222222">
+		<link rel="apple-touch-icon-precomposed" sizes="144x144" href="img/touch/apple-touch-icon-144x144-precomposed.png">
+		<link rel="apple-touch-icon-precomposed" sizes="114x114" href="img/touch/apple-touch-icon-114x114-precomposed.png">
+		<link rel="apple-touch-icon-precomposed" sizes="72x72" href="img/touch/apple-touch-icon-72x72-precomposed.png">
+		<link rel="apple-touch-icon-precomposed" href="img/touch/apple-touch-icon-57x57-precomposed.png">
+		<link rel="shortcut icon" href="img/touch/apple-touch-icon.png">
 
-
-    <!-- For iOS web apps. Delete if not needed. https://github.com/h5bp/mobile-boilerplate/issues/94 -->
-    
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
-    <meta name="apple-mobile-web-app-title" content="">
-    <!-- -->
-
-    <!-- This script prevents links from opening in Mobile Safari. https://gist.github.com/1042026 -->
-    <!--
-    <script>(function(a,b,c){if(c in b&&b[c]){var d,e=a.location,f=/^(a|html)$/i;a.addEventListener("click",function(a){d=a.target;while(!f.test(d.nodeName))d=d.parentNode;"href"in d&&(d.href.indexOf("http")||~d.href.indexOf(e.host))&&(a.preventDefault(),e.href=d.href)},!1)}})(document,window.navigator,"standalone")</script>
-    -->
-
-    <!--[if lt IE 9]>
-        <script src="lib/html5shiv/html5shiv.js"></script>
-    <![endif]-->
-
-    <!--[if lte IE 8]>
-        <script src="lib/json3/json3.min.js"></script>
-      <![endif]-->
+		<!-- Tile icon for Win8 (144x144 + tile color) -->
+		<meta name="msapplication-TileImage" content="img/touch/apple-touch-icon-144x144-precomposed.png">
+		<meta name="msapplication-TileColor" content="#222222">
 
 
-    <script>
-      // Avoid `console` errors in browsers that lack a console.
-      (function() {
-          var method;
-          var noop = function () {};
-          var methods = [
-              'assert', 'clear', 'count', 'debug', 'dir', 'dirxml', 'error',
-              'exception', 'group', 'groupCollapsed', 'groupEnd', 'info', 'log',
-              'markTimeline', 'profile', 'profileEnd', 'table', 'time', 'timeEnd',
-              'timeStamp', 'trace', 'warn'
-          ];
-          var length = methods.length;
-          var console = (window.console = window.console || {});
+		<!-- For iOS web apps. Delete if not needed. https://github.com/h5bp/mobile-boilerplate/issues/94 -->
 
-          while (length--) {
-              method = methods[length];
-              // Only stub undefined methods.
-              if (!console[method]) {
-                  console[method] = noop;
-              }
-          }
-      }());
-    </script>
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black">
+		<meta name="apple-mobile-web-app-title" content="">
+		<!-- -->
 
-    <link rel="stylesheet" href="app.css"/>
+		<!-- This script prevents links from opening in Mobile Safari. https://gist.github.com/1042026 -->
+		<!--
+		<script>(function(a,b,c){if(c in b&&b[c]){var d,e=a.location,f=/^(a|html)$/i;a.addEventListener("click",function(a){d=a.target;while(!f.test(d.nodeName))d=d.parentNode;"href"in d&&(d.href.indexOf("http")||~d.href.indexOf(e.host))&&(a.preventDefault(),e.href=d.href)},!1)}})(document,window.navigator,"standalone")</script>
+		-->
 
-  </head>
-  <!-- <body ng-class="bodyClass" oncontextmenu="return false" ondragstart="return false" onselectstart="return false"> -->
-   <body ng-class="{appReadyx:appReadyx,signUpModeOff:signUpModeOff}">
-    
-    <script src="jquery.js"></script>
-    <script src="dhUtil.js"></script>
-    <script src="angular.js"></script>
-    <script src="app.js"></script>
-    <script src="debounceService.js"></script>
-    <script src="infiniteScrollDir.js"></script>
-    
-    
-  </body>
+		<!--[if lt IE 9]>
+		    <script src="lib/html5shiv/html5shiv.js"></script>
+		<![endif]-->
+
+		<!--[if lte IE 8]>
+		    <script src="lib/json3/json3.min.js"></script>
+		  <![endif]-->
+
+
+		<script>
+		  // Avoid `console` errors in browsers that lack a console.
+		  (function() {
+		      var method;
+		      var noop = function () {};
+		      var methods = [
+		          'assert', 'clear', 'count', 'debug', 'dir', 'dirxml', 'error',
+		          'exception', 'group', 'groupCollapsed', 'groupEnd', 'info', 'log',
+		          'markTimeline', 'profile', 'profileEnd', 'table', 'time', 'timeEnd',
+		          'timeStamp', 'trace', 'warn'
+		      ];
+		      var length = methods.length;
+		      var console = (window.console = window.console || {});
+
+		      while (length--) {
+		          method = methods[length];
+		          // Only stub undefined methods.
+		          if (!console[method]) {
+		              console[method] = noop;
+		          }
+		      }
+		  }());
+		</script>
+
+		<link rel="stylesheet" href="app.css"/>
+		<script src="jquery.js"></script>
+		<script src="dhUtil.js"></script>
+		<script src="angular.js"></script>
+		<script src="app.js"></script>
+
+		<script src="debounceService.js"></script>
+		<script src="infiniteScrollDir.js"></script>
+		<!---->
+		<script src="testInfCtrl.js"></script>
+
+	</head>
+<!-- <body ng-class="bodyClass" oncontextmenu="return false" ondragstart="return false" onselectstart="return false"> -->
+<!-- <body ng-controller="searchCtrl"> -->
+	<body ng-app="myApp">
+		<div ng-controller="baseCtrl" ng-switch on="page">
+			<p>{{baseTest}}</p>
+			<div ng-switch-default ng-controller="testInfCtrl">
+				<div>
+					{{infinitizer.state.resultsArray.length}} -- 
+					{{infinitizer.state.bottomArchive.length}} -- 
+					{{infinitizer.state.topArchive.length}}
+				</div>
+				<div class="scrollArea testInf" infinitizer-dir="item in infinitizer.state.resultsArray" style="-webkit-transform: translate3d(0,0,0)">
+					<div class="user searchResultCard" fade-in-dir>
+						<div class="testItem">{{item.name}}</div>
+					</div>
+				</div>
+			</div>
+			<div ng-switch-when="!!page">
+				{{pageContent}}
+			</div>
+		</div>
+	</body>
 </html>
