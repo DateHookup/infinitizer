@@ -2,7 +2,8 @@
 (function (app) {app.run([function(){
     app.register.factory('icemanForScrollAdjustService', ['timeoutMasterService', function (timeoutMasterService) {
 
-        return function($scrollArea,itemArray,getItemHeightFun,itemSelector,innerWrapSelector,operation,scrollContainerHeight,scrollContainerWidth,scrollHeight,elmHeight,scrollPos,icemanDoneFun,getAdjustment,columns){
+        return function($scrollArea,itemArray,getItemHeightFun,getInnerWidthFun,itemSelector,innerWrapSelector,operation,scrollContainerHeight,scrollContainerWidth,scrollHeight,elmHeight,scrollPos,icemanDoneFun,getAdjustment,columns){
+            console.log('scroll bar affects width and stuff')
             // console.log(columns)
             scrollContainerHeight = typeof scrollContainerHeight !== 'undefined' ? scrollContainerHeight : $scrollArea.outerHeight();
             scrollContainerWidth = typeof scrollContainerWidth !== 'undefined' ? scrollContainerWidth : $scrollArea.outerWidth();
@@ -27,11 +28,16 @@
                     break;
                 }
             }
+
+            //some browsers scroll bar takes up width so this value differs from parent width
+            console.log($('.infinitizerInner').width())
+            var innerWidth = getInnerWidthFun()
+            console.log(innerWidth,$scrollArea.width())
             var clone = $scrollArea.clone();
             var itemsAboveScrollInClone = clone.find(itemSelector+':lt('+(itemArray.length - count)+')');
             itemsAboveScrollInClone.remove();
             clone.css({
-                'width':scrollContainerWidth,
+                'width':innerWidth,
                 'position':'absolute',
                 'z-index':9999,
                 // 'background':'rgba(255,0,0,.1)',
@@ -41,7 +47,7 @@
 
             })
             var adjustment = getAdjustment();
-
+            
             var innerWrapStyles = {
                 'position':'relative',
                 'top':((scrollPosDistToScrollBottom - totalHeightOfItemsToPreserve) - adjustment)/* - (scrollHeight - elmHeight) */
@@ -74,7 +80,7 @@
             };
 
             timeoutMasterService.manage(function(){
-                operation(function(icemanDoneCb){
+                operation(innerWidth,function(icemanDoneCb){
                     timeoutMasterService.manage(finishedFun,100)['catch'](finishedFun);
                 });
             },100)['catch'](finishedFun);
@@ -210,7 +216,9 @@
             link:function($scope, $elm, attrs) {
                 var konsole = {log:function(){}}
                 var fonsole = {log:function(){}}
-                $elm.addClass('infinitizer')
+                $elm.addClass('infinitizer');
+                $elm.wrapInner('<div class="infinitizerInner"></div>');
+                var $infinitizerInner = $elm.find('.infinitizerInner')
                 screenReadyService(function(){
                     //the scrollArea can be outside the $elm.  Like if there's non infinitizer content above the infinitizer content. like on home.
                     var $scrollArea = $elm.closest('.scrollArea');
@@ -448,7 +456,7 @@
                                     isRunning_restoreToBottomTimeoutRecursive = true;
                                     timeoutRecursiveService(
                                         amt,
-                                        0,
+                                        100,
                                         function(i){
                                             if($scope.infinitizer.state.bottomArchive.length > 0) {
                                                 $scope.infinitizer.state.resultsArray.push($scope.infinitizer.state.bottomArchive[0]);
@@ -504,8 +512,6 @@
                         var hubModel = $scope.infinitizer.config.assembleHubModel($scope.infinitizer.state.constraints,$scope.infinitizer.state);
                         $scope.infinitizer.config.callEndpoint(hubModel)
                         .then(function(response){
-                            console.log('response',response)
-                            // console.log(response)
                             var processedResults;
                             if(typeof $scope.infinitizer.config.resultPathInResponse !== 'undefined'){
                                 processedResults = dhUtil.propertyAt(response,$scope.infinitizer.config.resultPathInResponse)
@@ -891,16 +897,22 @@
                             var cachedCb;
 
                             var winnersAndLosersObject = generateWinnersAndLosersObject();
-                            var operation = function(icemanDoneWithTimeout){
+                            var operation = function(itemWidth,icemanDoneWithTimeout){
 
                                 generateWinnersAndLosersObject_thenProcessStateArrays(winnersAndLosersObject);
                                 
                                 if(winnersAndLosersObject.losersTop.length > 0){
                                    
-                                    $scrollArea.css('overflow-y','hidden');
+                                    $scrollArea.css({
+                                        'overflow-y':'hidden',
+                                        'width': itemWidth
+                                    });
                                     changeScroll(winnersAndLosersObject.winnerAmountAboveTop)
                                     screenReadyService(function(){
-                                        $scrollArea.css('overflow-y','');
+                                        $scrollArea.css({
+                                            'overflow-y':'',
+                                            'width': ''
+                                        });
                                         icemanDoneWithTimeout();
                                     });
                                     
@@ -914,6 +926,10 @@
                                 var heightPropertyName = $scope.infinitizer.config.name + '_LastHeight';
                                 return itemArray[i][heightPropertyName];
                             };
+                            var getInnerWidthFun = function(){
+                                console.log($('.infinitizerInner').width(),$('.infinitizerInner')[0]===$infinitizerInner[0])
+                                return $infinitizerInner.width();
+                            };
                             var icemanDoneFun = function(){
                                 theClone = $();
                             };
@@ -926,7 +942,7 @@
                             };
                             if(winnersAndLosersObject.losersTop.length > 0){
                                 cachedCb = cb;
-                                theClone = icemanForScrollAdjustService($scrollArea,$scope.infinitizer.state.resultsArray,getItemHeightFun,'.infinitizerItem','.pullToRefreshContentWrap',operation,containerHeight,'100%',scrollHeight,elmHeight,$scope.infinitizer.state.scrollPos,icemanDoneFun,adjustmentFun,$scope.infinitizer.config.columns);
+                                theClone = icemanForScrollAdjustService($scrollArea,$scope.infinitizer.state.resultsArray,getItemHeightFun,getInnerWidthFun,'.infinitizerItem','.infinitizerInner',operation,containerHeight,'100%',scrollHeight,elmHeight,$scope.infinitizer.state.scrollPos,icemanDoneFun,adjustmentFun,$scope.infinitizer.config.columns);
                             }
                         }
                         //Create clone of the scrollElm.  Plop it on top.  Them perform scrollbust overflow manipulation on original.

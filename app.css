@@ -52,3 +52,10 @@ body,html{margin:0;padding:0;};
 	margin:0;
 	padding:0;	
 }
+.goButton{
+	float:right;
+	background:green;
+}
+.testItem{
+	border-bottom:4px solid black;
+}

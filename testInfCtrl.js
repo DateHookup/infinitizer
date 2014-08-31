@@ -5,6 +5,10 @@
             $scope.baseTest = "baseTest!!";
             $scope.baseScope = $scope;
             $scope.page = '';
+            $scope.setPage = function(content){
+                console.log(content);
+                $scope.page = content;
+            };
         }
     ]);
     app.register.controller('testInfCtrl', [
