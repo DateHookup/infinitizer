@@ -423,7 +423,7 @@
                         }
                     }
                     var restoreToBottom = function(bottomArchiveHasInitialItems){
-
+                        console.log('restoreToBottom')
                         if(isRunning_restoreToBottomTimeoutRecursive === false){
 
                             if(!bottomArchiveHasInitialItems && !isAtTheEndOfResponses){
@@ -731,9 +731,7 @@
                         var totalHeight = 0;
                         var adjustment = loadMoreTopButton.showing ? loadMoreTopButton.height : 0;
                         var columns = $scope.infinitizer.config.columns
-                        for(var i=0,l=resultsArray.length; i<l; i++){
-                            console.log(resultsArray[i],'x')
-                        }
+                        
                         for(var i=0,l=resultsArray.length; i<l; i++){
                             var user = resultsArray[i];
                             var userPos = totalHeight;
@@ -784,9 +782,8 @@
                                     throw 'no items above top';
                                 }
                             }
-                            console.log(i,pxAboveTop + containerHeight,user,$scope.infinitizer.state.resultsArray.length)
-                            if(pxAboveTop + containerHeight < 0){
-                                console.log('y')
+                            // console.log(i,pxAboveTop + containerHeight,user,$scope.infinitizer.state.resultsArray.length)
+                            if(pxAboveTop + containerHeight < adjustment){
                                 losersBottom.push(user)
                             }
                             previousAmountAboveTop = pxAboveTop;
@@ -863,7 +860,14 @@
                                     watchResultDataOnce();
                                     alreadyWatching = false;
                                     screenReadyService(function(){
-                                        changeScroll($scope.infinitizer.state.scrollPos)
+                                        console.log('x')
+                                        var scrollAmt = $scope.infinitizer.state.scrollPos;
+                                        if(scrollAmt !== 0){
+                                            changeScroll(scrollAmt);
+                                        } else {
+                                            fetchMoreIfNeeded()
+                                        }
+                                    
                                     })
                                 }
                             });
@@ -954,6 +958,7 @@
                     });
                     var debOld = debounceService(100);
                     $scrollArea.on('scroll',function(e){
+                        console.log('scroll')
                         $scope.infinitizer.state.scrollPos = dhUtil.getYOffset($scrollArea);
                         var deb = debounceMasterService.manage('scrollDeb',function(){
                             fetchMoreIfNeeded();
