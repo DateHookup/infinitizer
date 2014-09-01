@@ -860,7 +860,6 @@
                                     watchResultDataOnce();
                                     alreadyWatching = false;
                                     screenReadyService(function(){
-                                        console.log('x')
                                         var scrollAmt = $scope.infinitizer.state.scrollPos;
                                         if(scrollAmt !== 0){
                                             changeScroll(scrollAmt);
@@ -970,9 +969,20 @@
                         // timeoutMasterService.manage(debOld.timeout);
                     });
 
+                    // $scope.$on('$destroy',function(){
+                    //     destroyed = true;
+                    //     generateWinnersAndLosersObject_thenProcessStateArrays()
+                    //     timeoutMasterService.clear();
+                    // });
                     $scope.$on('$destroy',function(){
+                        // var asdf="qwer"
+                        var startingTopArchiveLength = $scope.infinitizer.state.topArchive.length;
                         destroyed = true;
-                        generateWinnersAndLosersObject_thenProcessStateArrays()
+                        generateWinnersAndLosersObject_thenProcessStateArrays();
+                        var endingTopArchiveLength = $scope.infinitizer.state.topArchive.length;
+                        if(startingTopArchiveLength === 0 && endingTopArchiveLength !== 0){
+                            $scope.infinitizer.state.scrollPos += loadMoreTopButton.height;
+                        }
                         timeoutMasterService.clear();
                     })
                 })
