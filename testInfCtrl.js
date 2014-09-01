@@ -6,7 +6,6 @@
             $scope.baseScope = $scope;
             $scope.page = '';
             $scope.setPage = function(content){
-                console.log(content);
                 $scope.page = content;
             };
         }
@@ -41,12 +40,7 @@
 
             var api = new Api();
 
-            api.get({
-                constraints:{
-                    offset:4,
-                    limit:6
-                }
-            }).then(function(response){console.log(response)});
+            
 
 
             $scope.searchParamsSettings = 'x';
@@ -76,7 +70,6 @@
                             // loggedUserWatchOnce();
                             var firstTimeDefined = true;;
                             $scope.$watch('searchParamsSettings',function(newValue){
-                                console.log('newValue',newValue)
                                 if(typeof newValue === 'undefined'){
                                     //Very first time on search page
 
@@ -90,11 +83,11 @@
                                     //Already 
                                     if(firstTimeDefined){
                                         //returning to the search page.
-                                        console.log('Returning to the search page, or first time.')
+                                        // console.log('Returning to the search page, or first time.')
                                         cbs.resetOrRestoreResults();
                                     } else {
                                         //Already on the search page, new settings
-                                        console.log('Already on the search page, new settings');
+                                        // console.log('Already on the search page, new settings');
                                         cbs.reInit();
                                         cbs.reConstraints();
                                         cbs.resetOrRestoreResults();

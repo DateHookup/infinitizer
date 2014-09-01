@@ -1,9 +1,8 @@
-﻿//python -m SimpleHTTPServer 8080
+//python -m SimpleHTTPServer 8080
 (function (app) {app.run([function(){
     app.register.factory('icemanForScrollAdjustService', ['timeoutMasterService', function (timeoutMasterService) {
 
         return function($scrollArea,itemArray,getItemHeightFun,getInnerWidthFun,itemSelector,innerWrapSelector,operation,scrollContainerHeight,scrollContainerWidth,scrollHeight,elmHeight,scrollPos,icemanDoneFun,getAdjustment,columns){
-            console.log('scroll bar affects width and stuff')
             // console.log(columns)
             scrollContainerHeight = typeof scrollContainerHeight !== 'undefined' ? scrollContainerHeight : $scrollArea.outerHeight();
             scrollContainerWidth = typeof scrollContainerWidth !== 'undefined' ? scrollContainerWidth : $scrollArea.outerWidth();
@@ -30,9 +29,7 @@
             }
 
             //some browsers scroll bar takes up width so this value differs from parent width
-            console.log($('.infinitizerInner').width())
             var innerWidth = getInnerWidthFun()
-            console.log(innerWidth,$scrollArea.width())
             var clone = $scrollArea.clone();
             var itemsAboveScrollInClone = clone.find(itemSelector+':lt('+(itemArray.length - count)+')');
             itemsAboveScrollInClone.remove();
@@ -143,7 +140,6 @@
                 replace: true,
                 scope: true,
                 compile: function (tElement, tAttrs, transclude) {
-                    console.log('xx')
                   var rpt = document.createAttribute('ng-repeat');
                   rpt.nodeValue = tAttrs.infinitizerDir;
                   tElement.find('.infinitizerItem')[0].attributes.setNamedItem(rpt);
@@ -735,7 +731,9 @@
                         var totalHeight = 0;
                         var adjustment = loadMoreTopButton.showing ? loadMoreTopButton.height : 0;
                         var columns = $scope.infinitizer.config.columns
-
+                        for(var i=0,l=resultsArray.length; i<l; i++){
+                            console.log(resultsArray[i],'x')
+                        }
                         for(var i=0,l=resultsArray.length; i<l; i++){
                             var user = resultsArray[i];
                             var userPos = totalHeight;
@@ -761,7 +759,7 @@
                                         firstPlaceWinner = previousUser;
                                         winnerAmountAboveTop = previousAmountAboveTop;
                                         // for(var i = columns; i--; ){
-                                        for(var i=0,l=columns;i<l;i++){
+                                        for(var ii=0,ll=columns;ii<ll;ii++){
                                             var poppedItem = losersTop.pop();;
                                             winners.unshift(poppedItem);
                                             
@@ -786,7 +784,9 @@
                                     throw 'no items above top';
                                 }
                             }
+                            console.log(i,pxAboveTop + containerHeight,user,$scope.infinitizer.state.resultsArray.length)
                             if(pxAboveTop + containerHeight < 0){
+                                console.log('y')
                                 losersBottom.push(user)
                             }
                             previousAmountAboveTop = pxAboveTop;
@@ -834,7 +834,6 @@
                                         intialIsDone_fetchMoreIfNeeded = true;
                                     } else {
                                         if($scope.infinitizer.state.bottomArchive.length<maxItems){
-                                            // console.log('xxxxx')
                                             fetchMoreIfNeeded();
                                         }
                                     }                         
@@ -927,7 +926,6 @@
                                 return itemArray[i][heightPropertyName];
                             };
                             var getInnerWidthFun = function(){
-                                console.log($('.infinitizerInner').width(),$('.infinitizerInner')[0]===$infinitizerInner[0])
                                 return $infinitizerInner.width();
                             };
                             var icemanDoneFun = function(){
@@ -958,7 +956,6 @@
                     $scrollArea.on('scroll',function(e){
                         $scope.infinitizer.state.scrollPos = dhUtil.getYOffset($scrollArea);
                         var deb = debounceMasterService.manage('scrollDeb',function(){
-                            console.log('S');
                             fetchMoreIfNeeded();
                         },100,true);   
                         // debOld.reset(function(){
