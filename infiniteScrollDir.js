@@ -3,7 +3,6 @@
     app.register.factory('icemanForScrollAdjustService', ['timeoutMasterService', function (timeoutMasterService) {
 
         return function($scrollArea,itemArray,getItemHeightFun,getInnerWidthFun,itemSelector,innerWrapSelector,operation,scrollContainerHeight,scrollContainerWidth,scrollHeight,elmHeight,scrollPos,icemanDoneFun,getAdjustment,columns){
-            // console.log(columns)
             scrollContainerHeight = typeof scrollContainerHeight !== 'undefined' ? scrollContainerHeight : $scrollArea.outerHeight();
             scrollContainerWidth = typeof scrollContainerWidth !== 'undefined' ? scrollContainerWidth : $scrollArea.outerWidth();
             scrollHeight = typeof scrollHeight !== 'undefined' ? scrollHeight : $el.prop('scrollHeight');
@@ -15,9 +14,7 @@
 
             var count = 0;
             for(var i = itemArray.length; i--; ){
-                // totalHeightOfItemsToPreserve += getItemHeightFun(i,itemArray);
                 var remainder = i % columns;
-                // console.log('remainder',remainder,'columns',columns)
                 if(remainder === 0){
                     totalHeightOfItemsToPreserve += getItemHeightFun(i,itemArray)
                 }
@@ -214,8 +211,10 @@
                 var fonsole = {log:function(){}}
                 $elm.addClass('infinitizer');
                 $elm.wrapInner('<div class="infinitizerInner"></div>');
-                var $infinitizerInner = $elm.find('.infinitizerInner')
+                var $infinitizerInner = $elm.find('.infinitizerInner');
                 screenReadyService(function(){
+                    var state = $scope.infinitizer.state;
+                    var config = $scope.infinitizer.config;
                     //the scrollArea can be outside the $elm.  Like if there's non infinitizer content above the infinitizer content. like on home.
                     var $scrollArea = $elm.closest('.scrollArea');
                     var scrollAreaIsElm = $scrollArea[0] === $elm[0];
@@ -423,7 +422,6 @@
                         }
                     }
                     var restoreToBottom = function(bottomArchiveHasInitialItems){
-                        console.log('restoreToBottom')
                         if(isRunning_restoreToBottomTimeoutRecursive === false){
 
                             if(!bottomArchiveHasInitialItems && !isAtTheEndOfResponses){
@@ -782,16 +780,12 @@
                                     throw 'no items above top';
                                 }
                             }
-                            // console.log(i,pxAboveTop + containerHeight,user,$scope.infinitizer.state.resultsArray.length)
                             if(pxAboveTop + containerHeight < adjustment){
                                 losersBottom.push(user)
                             }
                             previousAmountAboveTop = pxAboveTop;
                             previousUser = user;
                         }
-                        // if(losersTop[losersTop.length-1]){
-                        //     console.log(losersTop[losersTop.length-1].user.basics.username)
-                        // }
                         return {
                             winners:winners,
                             winnerAmountAboveTop:winnerAmountAboveTop,
@@ -957,25 +951,13 @@
                     });
                     var debOld = debounceService(100);
                     $scrollArea.on('scroll',function(e){
-                        console.log('scroll')
                         $scope.infinitizer.state.scrollPos = dhUtil.getYOffset($scrollArea);
                         var deb = debounceMasterService.manage('scrollDeb',function(){
                             fetchMoreIfNeeded();
                         },100,true);   
-                        // debOld.reset(function(){
-                        //     console.log('S');
-                        //     fetchMoreIfNeeded();
-                        // });
-                        // timeoutMasterService.manage(debOld.timeout);
                     });
 
-                    // $scope.$on('$destroy',function(){
-                    //     destroyed = true;
-                    //     generateWinnersAndLosersObject_thenProcessStateArrays()
-                    //     timeoutMasterService.clear();
-                    // });
                     $scope.$on('$destroy',function(){
-                        // var asdf="qwer"
                         var startingTopArchiveLength = $scope.infinitizer.state.topArchive.length;
                         destroyed = true;
                         generateWinnersAndLosersObject_thenProcessStateArrays();
