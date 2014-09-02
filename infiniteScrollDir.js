@@ -7,17 +7,17 @@
                 $scrollArea:'required',
                 itemArray:'required',
                 getItemHeightFun:'required',
+                operation:'required',
                 getInnerWidthFun:function(){return settings.$scrollArea.children().first().outerWidth()},
                 itemSelector:'li',
                 innerWrapSelector:'div:first-child',
-                operation:'required',
                 scrollContainerHeight:settings.$scrollArea.height(),
                 scrollHeight:settings.$scrollArea.prop('scrollHeight'),
                 elmHeight:settings.$scrollArea.height(),
                 scrollPos:dhUtil.getYOffset(settings.$scrollArea),
                 icemanDoneFun:function(){},
                 getAdjustment:function(){return 0},
-                columns:1,
+                columns:1
             };
             settings = $.extend(defaults,settings)
             for(var key in settings){
@@ -236,27 +236,13 @@
                     var scrollAreaIsElm = $scrollArea[0] === $elm[0];
                     var $resultsList = $scrollArea.find('.infinitizerResults');
                     $resultsList.css('z-index',1)
-                    if($resultsList.length === 0){
-                        throw 'missing element with class of "infinitizerResults"'
-                    }
-                    $scrollArea.css('position','relative');
                     $resultsList.css('position','relative');//to make z-index effective against invisilbe loadMoreButton click
+                    $scrollArea.css('position','relative');
 
                     var fetching = false;
                     var containerHeight;
                     var numberToRequest = config.initialFetchAmt;
-                    numberToRequest += numberToRequest % config.columns
-                    // var numberOfContainerHeightsBelowBottomBeforeFetching = config.numberOfContainerHeightsBelowBottomBeforeFetching;
-                    // var chunkAmt = config.numberOfContainerHeightsToAddToBottom;
-
-                    var returnResultsArray = function(){
-                        return $scope.infinitizer.state.resultsArray;
-                    };
-
-
-                    // $('body').css('overflow','hidden')
-
-                    
+                    numberToRequest += numberToRequest % config.columns;
                     
                     var loadMoreButtonClass = function(placement,text,className,arrayName){
                         this.$el = $('<div class="'+className+' hidden">'+text+'</div>');
@@ -279,35 +265,28 @@
                     };
                     loadMoreButtonClass.prototype.manage = function(){
                         var self = this;
-                        // debounceMasterService.manage('debX',function(){
-                            if(state[self.arrayName].length !== 0){
-                                self.show();
-                            } else {
-                                self.hide();
-                            }
-                        // },300,true);
+                        if(state[self.arrayName].length !== 0){
+                            self.show();
+                        } else {
+                            self.hide();
+                        }
                     };
+
                     var loadMoreTopButton = new loadMoreButtonClass('before','Load previous','loadMoreTop','topArchive');
                     loadMoreTopButton.$el.on('click',function(){
                         restoreToTop();
                     })
                     //When you click an item, go to that page, then go back, to restore proper scroll pos, it needs to
                     //be showing this button ahead of time.
-                    if(state.topArchive.length > 0){
-                        loadMoreTopButton.manage();
-                    }
+                    loadMoreTopButton.manage();
 
                     var loadMoreBottomButton = new loadMoreButtonClass('after','Loading more ...','loadMoreBottom','bottomArchive');
                     
 
 
-
-
-
                     var restoreToTop = function(){
                         var scrollPos = state.scrollPos;
                         var beforeHeight = $resultsList.height();
-                        // var amt = Math.min(state.topArchive.length,numberToRequest);
                         var amt = Math.ceil(Math.min(state.topArchive.length,maxItems/2));
                         var modulusOfAmt = amt % config.columns;
                         amt -= modulusOfAmt;
@@ -973,11 +952,6 @@
                         //This hides a visible flash that scroll busting causes.
                     };
 
-                    var hasTouch = false;
-                    
-                    $scrollArea.on('touchstart',function(e){
-                        hasTouch = true;
-                    });
                     $scrollArea.on('scroll',function(e){
                         state.scrollPos = dhUtil.getYOffset($scrollArea);
                         var deb = debounceMasterService.manage('scrollDeb',function(){
@@ -986,11 +960,13 @@
                     });
 
                     $scope.$on('$destroy',function(){
-                        var startingTopArchiveLength = state.topArchive.length;
                         destroyed = true;
+
+                        var startingTopArchiveLength = state.topArchive.length;
                         generateWinnersAndLosersObject_thenProcessStateArrays();
                         var endingTopArchiveLength = state.topArchive.length;
                         if(startingTopArchiveLength === 0 && endingTopArchiveLength !== 0){
+                            //when no topLoadingButton before destroy, but chopTopOnDestroy yields toLoadingButton when returning to infinitizer
                             state.scrollPos += loadMoreTopButton.height;
                         }
                         timeoutMasterService.clear();
