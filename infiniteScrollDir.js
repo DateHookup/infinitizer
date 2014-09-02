@@ -231,6 +231,8 @@
                 screenReadyService(function(){
                     var state = $scope.infinitizer.state;
                     var config = $scope.infinitizer.config;
+
+
                     //the scrollArea can be outside the $elm.  Like if there's non infinitizer content above the infinitizer content. like on home.
                     var $scrollArea = $elm.closest('.scrollArea');
                     var scrollAreaIsElm = $scrollArea[0] === $elm[0];
@@ -282,49 +284,33 @@
 
                     var loadMoreBottomButton = new loadMoreButtonClass('after','Loading more ...','loadMoreBottom','bottomArchive');
                     
-
-
                     var restoreToTop = function(){
-                        var scrollPos = state.scrollPos;
                         var beforeHeight = $resultsList.height();
                         var amt = Math.ceil(Math.min(state.topArchive.length,maxItems/2));
-                        var modulusOfAmt = amt % config.columns;
-                        amt -= modulusOfAmt;
+                        amt -= amt % config.columns;
                         $scope.$apply(function(){
-                            for(var i=0,l=amt; i<l;i++){
-                                state.resultsArray.push(state.topArchive[state.topArchive.length -1 - i]);
+                            for(var i=0; i<amt;i++){
+                                state.resultsArray.push(state.topArchive[state.topArchive.length - 1 - i]);
                             }
                             state.topArchive.splice(state.topArchive.length - amt,amt);
                         });
-                        
-
                         var afterHeight = $resultsList.height();
-
                         var heightDif = afterHeight - beforeHeight;
-
                         var toUnshift = state.resultsArray.splice(state.resultsArray.length - (amt),amt);
-
-
                         $scope.$apply(function(){
                             for(var i=0,l=toUnshift.length; i<l;i++){
-                            // for(var i = toUnshift.length; i--; ){ 
                                 state.resultsArray.unshift(toUnshift[i])
                             }
-
                             removeFromBottom(amt);
                             changeScroll(heightDif + state.scrollPos);
-                            // getHeights();
                         });
-                        // $scrollArea.scrollTop(heightDif);
-                        
-                        
-
                     };
+
                     var removeFromBottom = function(amt){
                         if(amt > 0){
                             var archiveQueue = state.resultsArray.splice(state.resultsArray.length - (amt),amt);
                             for(var i = archiveQueue.length; i--; ){
-                                state.bottomArchive.unshift(archiveQueue[i])
+                                state.bottomArchive.unshift(archiveQueue[i]);
                             }
                             loadMoreBottomButton.manage();
                         }
@@ -340,7 +326,7 @@
                         if(typeof state.resultsArray === 'undefined' || state.resultsArray.length === 0 || needToReset){
                             timeoutMasterService.clear();
                             isRunning_restoreToBottomTimeoutRecursive = false;
-                            theClone.remove()
+                            theClone.remove();
                             theClone = $();
                             intialIsDone_fetchMoreIfNeeded = false;
                             numberToRequest = maxItems !== null ? maxItems : numberToRequest;//this gets turned to zero after...but we need a good number for restoreToBottom.
@@ -353,7 +339,6 @@
                             state.topArchive = [];
                             loadMoreTopButton.manage();
                             restoreToBottom()
-                            // restoreToBottom();
 
                         }
                         needToReset = false;
@@ -381,7 +366,6 @@
                     
                     
                     
-                    var restoreBellowTechnique = 'recursive';
 
                     var isRunning_restoreToBottomTimeoutRecursive = false;
                     var maxItems = null;
@@ -389,7 +373,7 @@
                     var afterRestoreToBottom = function(){
                         var resultsArray = state.resultsArray;
                         if(resultsArray.length > 0 ){
-                            debounceMasterService.manage('debX',function debxCb(){
+                            debounceMasterService.manage('debX_'+config.name,function debxCb(){
 
                                 //if a user comes up in search results with a blocked=true, splice them out.
                                 //TODO get block-user-list-update working
@@ -417,6 +401,7 @@
                         }
                     }
                     var restoreToBottom = function(bottomArchiveHasInitialItems){
+
                         if(isRunning_restoreToBottomTimeoutRecursive === false){
 
                             if(!bottomArchiveHasInitialItems && !isAtTheEndOfResponses){
@@ -428,60 +413,50 @@
                             }/* else {
                                 fonsole.log('bottomArchiveHasInitialItems so transfer to resultsArray')
                             }*/
+                            var amt;
                             if(maxItems !== null){
-                                var amt = maxItems - state.resultsArray.length;
+                                amt = maxItems - state.resultsArray.length;
                                 amt +=  amt % config.columns !== 0 ? config.columns - (amt % config.columns) : 0;
-                                amt = amt > state.bottomArchive.length ? state.bottomArchive.length : amt;
                             } else {
                                 amt = config.initialFetchAmt;
                             }
-                            amt = amt >0 ? amt :0;
+                            amt = amt > state.bottomArchive.length ? state.bottomArchive.length : amt;
+                            amt = amt > 0 ? amt :0;
                             // var amt = state.bottomArchive.length < numberToRequest ? state.bottomArchive.length : numberToRequest;
                             // var modulusOfAmt = amt % config.columns;                            
                             // amt = isAtTheEndOfResponses && amt === state.bottomArchive.length ? amt : amt - modulusOfAmt;
                             // amt = bottomArchiveHasInitialItems && amt === 0 ? state.bottomArchive.length : amt; //case of 1 intial item in multi
-                            if(restoreBellowTechnique === 'recursive'){
-                                if(amt > 0){
-                                    isRunning_restoreToBottomTimeoutRecursive = true;
-                                    timeoutRecursiveService(
-                                        amt,
-                                        100,
-                                        function(i){
-                                            if(state.bottomArchive.length > 0) {
-                                                state.resultsArray.push(state.bottomArchive[0]);
-                                                state.bottomArchive.splice(0,1);
-                                            } else {
-                                                // $scope.resultsArrayUpdated = new Date().getTime();
-                                                // afterRestoreToBottom();
-                                            }
-                                        },
-                                        function(i){
-                                            isRunning_restoreToBottomTimeoutRecursive = false;
+                            if(amt > 0){
 
-                                            if(state.bottomArchive.length === 0){
-                                                loadMoreBottomButton.manage();
-                                            } else {
-                                                loadMoreBottomButton.manage();
-                                            }
-                                            // $scope.resultsArrayUpdated = new Date().getTime();
-
-                                            afterRestoreToBottom();
-
-
-                                            if(wasBusy === true){
-                                                wasBusy = false;
-                                                restoreToBottom();
-                                            }
-
+                                isRunning_restoreToBottomTimeoutRecursive = true;
+                                timeoutRecursiveService(
+                                    amt,
+                                    100,
+                                    function(i){
+                                        if(state.bottomArchive.length > 0) {
+                                            state.resultsArray.push(state.bottomArchive[0]);
+                                            state.bottomArchive.splice(0,1);
                                         }
-                                    );
-                                }
-                            }/* else {
-                                for(var i=0,l=amt; i<l;i++){
-                                    state.resultsArray.push(state.bottomArchive[i]);
-                                }
-                                state.bottomArchive.splice(0,amt);
-                            }*/
+                                    },
+                                    function(i){
+                                        console.log($scope.which,state.bottomArchive.length)
+                                        isRunning_restoreToBottomTimeoutRecursive = false;
+
+                                        if(state.bottomArchive.length === 0){
+                                            loadMoreBottomButton.manage();
+                                        } else {
+                                            loadMoreBottomButton.manage();
+                                        }
+
+                                        afterRestoreToBottom();
+
+                                        if(wasBusy === true){
+                                            wasBusy = false;
+                                            restoreToBottom();
+                                        }
+                                    }
+                                );
+                            }
                         } else {
                             wasBusy = true;
                         }
@@ -538,7 +513,6 @@
                     var destroyed = false;
                     var fetchMoreIfNeeded = function(){
                         // console.trace()
-                        
                         if(!destroyed){
                             if(state.resultsArray.length !== 0){
                                 
@@ -635,8 +609,8 @@
                                 var scrollHeightDeficit = (verticalDownLimitScrollPos - (scrollHeight - adjustment));
                                 
                                 var amtItemsToFillDeficit = scrollHeightDeficit > 0 ? scrollHeightDeficit/averageItemHeight : 0;
-                                amtItemsToFillDeficit = amtItemsToFillDeficit * config.columns;
-                                amtItemsToFillDeficit = amtItemsToFillDeficit - amtItemsToFillDeficit % config.columns;
+                                amtItemsToFillDeficit += config.columns;
+                                amtItemsToFillDeficit -= amtItemsToFillDeficit % config.columns;
                                 numberToRequest = Math.max(Math.ceil(amtItemsToFillDeficit),0);
 
 
@@ -790,43 +764,6 @@
                     };
 
                     var intialIsDone_fetchMoreIfNeeded = false;
-                    var ongoingWatch = 'infinitizer.state.resultsArray'
-                    if(restoreBellowTechnique === 'recursive'){
-                        ongoingWatch ='resultsArrayUpdated'
-                    }
-                    $scope.$watch(ongoingWatch,function(newData,x,y,z){
-                        if(typeof newData !== 'undefined'){
-
-                            var resultsArray = state.resultsArray;
-                            if(resultsArray.length > 0 ){
-                                debounceMasterService.manage('debXX',function debxCb(){
-
-                                    //if a user comes up in search results with a blocked=true, splice them out.
-                                    //TODO get block-user-list-update working
-                                    $scope.$apply(function(){
-                                        for(var i = resultsArray.length; i--; ){
-                                            if(resultsArray[i].blocked){
-                                                resultsArray.splice(i,1)
-                                            }
-                                        }
-                                    });
-
-                                    scrollHeight = $scrollArea.prop('scrollHeight');
-                                    if(!scrollAreaIsElm){elmHeight = $elm.outerHeight();}
-                                    containerHeight = containerHeight ? containerHeight : $scrollArea.outerHeight();
-                                    if(!intialIsDone_fetchMoreIfNeeded){
-
-                                        fetchMoreIfNeeded();
-                                        intialIsDone_fetchMoreIfNeeded = true;
-                                    } else {
-                                        if(state.bottomArchive.length<maxItems){
-                                            fetchMoreIfNeeded();
-                                        }
-                                    }                         
-                                },0,true);
-                            }
-                        }
-                    },true);
                     
                     var changeScroll = function(scrollPos){
                         var adjustment = 0;
@@ -954,7 +891,7 @@
 
                     $scrollArea.on('scroll',function(e){
                         state.scrollPos = dhUtil.getYOffset($scrollArea);
-                        var deb = debounceMasterService.manage('scrollDeb',function(){
+                        var deb = debounceMasterService.manage('scrollDeb_'+config.name,function(){
                             fetchMoreIfNeeded();
                         },100,true);   
                     });

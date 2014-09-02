@@ -8,11 +8,27 @@
             $scope.setPage = function(content){
                 $scope.page = content;
             };
+            x = $scope
         }
     ]);
+
+    scopeArray = [];
+    app.register.controller('boomerCtrl', [
+        '$scope','$rootScope','$location','$interval','$timeout','$q',
+        function($scope,$rootScope,$location,$interval,$timeout,$q){
+            $scope.which = 'boomer';
+        }
+    ]);
+    app.register.controller('behemothCtrl', [
+        '$scope','$rootScope','$location','$interval','$timeout','$q',
+        function($scope,$rootScope,$location,$interval,$timeout,$q){
+            $scope.which = 'behemoth';
+        }
+    ])
     app.register.controller('testInfCtrl', [
         '$scope','$rootScope','$location','$interval','$timeout','$q',
         function($scope,$rootScope,$location,$interval,$timeout,$q){
+            scopeArray.push($scope)
             var db = []
             for(var i=0;i<400;i++){
                 db.push({
@@ -40,15 +56,15 @@
 
             var api = new Api();
 
-            
+
 
 
             $scope.searchParamsSettings = 'x';
 
             $scope.widgetNamespace = $scope.$id;
             $scope.$widgetScope = $scope;
-                
-            $scope.pageName = 'searchPage';
+
+            $scope.pageName = 'pageName_'+$scope.which; 
             $scope[$scope.pageName + '_infinitizer'] = {
                 name: $scope.pageName+'_searchResults',
                 assembleHubModel :function(constraints){
