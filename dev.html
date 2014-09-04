@@ -117,7 +117,7 @@
 		<div class="clearfix">
 			<div class="infinitizerDemo" ng-controller="boomerCtrl">
 				<div ng-controller="baseCtrl" ng-switch on="!!page">
-					<p>{{baseTest}}</p>
+					<p>{{baseTest}</p>
 					<div ng-switch-default ng-controller="testInfCtrl">
 						<div>
 							{{infinitizer.state.resultsArray.length}} -- 
@@ -125,7 +125,7 @@
 							{{infinitizer.state.topArchive.length}} -- 
 							{{!!page}}
 						</div>
-						<div class="scrollArea testInf" infinitizer-dir="item in infinitizer.state.resultsArray" style="-webkit-transform: translate3d(0,0,0)">
+						<div class="scrollArea testInf" infinitizer-dir="item in infinitizer.state.resultsArray" style="-webkit-transform: translate3d(0,0,0)" ng-class="'columns'+columns">
 							<div class="user searchResultCard" fade-in-dir>
 
 								<div class="testItem">
@@ -151,7 +151,7 @@
 							{{infinitizer.state.topArchive.length}} -- 
 							{{!!page}}
 						</div>
-						<div class="scrollArea testInf" infinitizer-dir="item in infinitizer.state.resultsArray" style="-webkit-transform: translate3d(0,0,0)">
+						<div class="scrollArea testInf" infinitizer-dir="item in infinitizer.state.resultsArray" style="-webkit-transform: translate3d(0,0,0)" ng-class="'columns'+columns">
 							<div class="user searchResultCard" fade-in-dir>
 
 								<div class="testItem">

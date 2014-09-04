@@ -237,6 +237,9 @@
                     var $scrollArea = $elm.closest('.scrollArea');
                     var scrollAreaIsElm = $scrollArea[0] === $elm[0];
                     var $resultsList = $scrollArea.find('.infinitizerResults');
+                    if(config.columns > 1){
+                        $resultsList.addClass('clearfix');
+                    }
                     $resultsList.css('z-index',1)
                     $resultsList.css('position','relative');//to make z-index effective against invisilbe loadMoreButton click
                     $scrollArea.css('position','relative');
@@ -286,8 +289,12 @@
                     
                     var restoreToTop = function(){
                         var beforeHeight = $resultsList.height();
-                        var amt = Math.ceil(Math.min(state.topArchive.length,maxItems/2));
+                        var amt = Math.ceil(Math.min(state.topArchive.length,maxItems/3));
                         amt -= amt % config.columns;
+
+                        //fixed mis-alignment during final restoreToTop
+                        amt = amt * 2 >= state.topArchive.length ? state.topArchive.length : amt;
+                        
                         $scope.$apply(function(){
                             for(var i=0; i<amt;i++){
                                 state.resultsArray.push(state.topArchive[state.topArchive.length - 1 - i]);
@@ -296,6 +303,9 @@
                         });
                         var afterHeight = $resultsList.height();
                         var heightDif = afterHeight - beforeHeight;
+
+                   
+
                         var toUnshift = state.resultsArray.splice(state.resultsArray.length - (amt),amt);
                         $scope.$apply(function(){
                             for(var i=0,l=toUnshift.length; i<l;i++){
@@ -431,7 +441,7 @@
                                 isRunning_restoreToBottomTimeoutRecursive = true;
                                 timeoutRecursiveService(
                                     amt,
-                                    100,
+                                    0,
                                     function(i){
                                         if(state.bottomArchive.length > 0) {
                                             state.resultsArray.push(state.bottomArchive[0]);
@@ -439,7 +449,6 @@
                                         }
                                     },
                                     function(i){
-                                        console.log($scope.which,state.bottomArchive.length)
                                         isRunning_restoreToBottomTimeoutRecursive = false;
 
                                         if(state.bottomArchive.length === 0){

@@ -64,3 +64,16 @@ body,html{margin:0;padding:0;};
 	float:left;
 	width:50%;
 }
+.infinitizerItem{
+	float:left;
+}
+.columns1 .infinitizerItem{
+	float:none;
+}
+
+.columns2 .infinitizerItem{
+	width:50%;
+}
+.columns3 .infinitizerItem{
+	width:33%;
+}

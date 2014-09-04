@@ -17,12 +17,14 @@
         '$scope','$rootScope','$location','$interval','$timeout','$q',
         function($scope,$rootScope,$location,$interval,$timeout,$q){
             $scope.which = 'boomer';
+            $scope.columns = 1;
         }
     ]);
     app.register.controller('behemothCtrl', [
         '$scope','$rootScope','$location','$interval','$timeout','$q',
         function($scope,$rootScope,$location,$interval,$timeout,$q){
             $scope.which = 'behemoth';
+            $scope.columns = 3;
         }
     ])
     app.register.controller('testInfCtrl', [
@@ -127,7 +129,8 @@
                 maxScreens:3,
 
                 preserveTopScreenAmt: 1,
-                chopTopOnDestroy:true
+                chopTopOnDestroy:true,
+                columns:$scope.columns
             };
         }
     ]);
