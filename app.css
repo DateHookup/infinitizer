@@ -77,3 +77,13 @@ body,html{margin:0;padding:0;};
 .columns3 .infinitizerItem{
 	width:33%;
 }
+
+
+.columnsmagic .infinitizerItem{
+	width:50%;
+}
+@media screen and (min-width: 1000px) {
+	.columnsmagic .infinitizerItem{
+		width:33%;
+	}
+}

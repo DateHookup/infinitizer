@@ -24,7 +24,7 @@
         '$scope','$rootScope','$location','$interval','$timeout','$q',
         function($scope,$rootScope,$location,$interval,$timeout,$q){
             $scope.which = 'behemoth';
-            $scope.columns = 3;
+            $scope.columns = 'magic';
         }
     ])
     app.register.controller('testInfCtrl', [

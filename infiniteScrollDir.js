@@ -100,15 +100,18 @@
         };
     }]);
     app.register.directive(
-        'infiniteScrollItemDir', ['screenReadyService',function(screenReadyService){
+        'infiniteScrollItemDir', ['screenReadyService','windowService',function(screenReadyService,windowService){
             return function($scope, $elm, attrs) {
                 if($scope[$scope.infiniteScrollScope.itemName]){
-                    screenReadyService(function(){
-                        $scope[$scope.infiniteScrollScope.itemName][$scope.infinitizer.config.name + '_LastHeight'] = $elm.outerHeight(true)
-                    })
+                    var doIt = function(){
+                        $scope[$scope.infiniteScrollScope.itemName][$scope.infinitizer.config.name + '_LastHeight'] = $elm.outerHeight(true);
+                        $scope[$scope.infiniteScrollScope.itemName][$scope.infinitizer.config.name + '_LastWidth'] = $scope.infinitizer.config.magicColumns ? $elm.outerWidth(true) : null;
+                    };
+                    screenReadyService(doIt);
+                    windowService.onResize(doIt,$scope)
                 }
 
-            };
+            };g
         }]
     );
     app.register.directive( 'transcope', function() {
@@ -179,9 +182,9 @@
 
     app.register.directive(
         'infiniteScrollDir', [
-            'screenReadyService','debounceService','$timeout','$interval','$q','$timeout','debounceMasterService','timeoutMasterService','icemanForScrollAdjustService','timeoutRecursiveService','$parse',
+            'screenReadyService','debounceService','$timeout','$interval','$q','$timeout','debounceMasterService','timeoutMasterService','icemanForScrollAdjustService','timeoutRecursiveService','$parse','windowService',
         function(
-            screenReadyService,debounceService,$timeout,$interval,$q,$timeout,debounceMasterService,timeoutMasterService,icemanForScrollAdjustService,timeoutRecursiveService,$parse
+            screenReadyService,debounceService,$timeout,$interval,$q,$timeout,debounceMasterService,timeoutMasterService,icemanForScrollAdjustService,timeoutRecursiveService,$parse,windowService
         ){
         debounceMasterServicex = debounceMasterService;
         timeoutMasterServicex = timeoutMasterService;
@@ -215,6 +218,12 @@
                         $scope.infinitizer.state = getCache(infinitizerSettingsFromCtrl.name);
                         $scope.infinitizer.config = infinitizerSettingsFromCtrl;
                         $scope.infinitizer.config.columns = typeof $scope.infinitizer.config.columns !== 'undefined' ? $scope.infinitizer.config.columns : 1;
+                        if($scope.infinitizer.config.columns === 'magic'){
+                            $scope.infinitizer.config.columns = 1;
+                            $scope.infinitizer.config.magicColumns = true;
+                        } else {
+                             $scope.infinitizer.config.magicColumns = false;
+                        }
                     }
                 });
                     
@@ -223,6 +232,7 @@
 
             }],
             link:function($scope, $elm, attrs) {
+                
                 var konsole = {log:function(){}}
                 var fonsole = {log:function(){}}
                 $elm.addClass('infinitizer');
@@ -237,7 +247,7 @@
                     var $scrollArea = $elm.closest('.scrollArea');
                     var scrollAreaIsElm = $scrollArea[0] === $elm[0];
                     var $resultsList = $scrollArea.find('.infinitizerResults');
-                    if(config.columns > 1){
+                    if(config.columns > 1 || config.magicColumns){
                         $resultsList.addClass('clearfix');
                     }
                     $resultsList.css('z-index',1)
@@ -294,7 +304,7 @@
 
                         //fixed mis-alignment during final restoreToTop
                         amt = amt * 2 >= state.topArchive.length ? state.topArchive.length : amt;
-                        
+
                         $scope.$apply(function(){
                             for(var i=0; i<amt;i++){
                                 state.resultsArray.push(state.topArchive[state.topArchive.length - 1 - i]);
@@ -343,6 +353,7 @@
                             setupOnce_watchResultData();
                             isAtTheEndOfResponses = false;
                             wasBusy = false;
+                            needsWidthAdjust = true;
 
                             state.resultsArray = [];
                             state.bottomArchive = [];
@@ -517,8 +528,15 @@
                             loadMoreBottomButton.manage();
                         }                     
                     };
-
-
+                    needsWidthAdjust = true;
+                    if(config.magicColumns){
+                        windowService.onResize(function(){
+                            var deb = debounceMasterService.manage('resizeDeb'+config.name,function(){
+                                needsWidthAdjust = true;
+                                fetchMoreIfNeeded();
+                            },1000,true);   
+                        },$scope);
+                    }
                     var destroyed = false;
                     var fetchMoreIfNeeded = function(){
                         // console.trace()
@@ -593,14 +611,25 @@
 
                                 scrollHeight = $scrollArea.prop('scrollHeight');
                                 if(!scrollAreaIsElm){elmHeight = $elm.outerHeight();}
+                                if(config.magicColumns && needsWidthAdjust){
+                                    var infinitizerInnerWidth = $infinitizerInner.width();
+                                    var widthPropertyName = config.name + '_LastWidth';
+                                }
 
                                 var elmBottomPos = containerHeight ? state.scrollPos + containerHeight : state.scrollPos;
                                 var heightPropertyName = config.name + '_LastHeight';
+                                
                                 var allHeights = 0;
                                 var aLength = state.resultsArray.length;
                                 var totalCount = aLength;
                                 for(var i=0,l=aLength;i<l;i++){
                                     var itemHeight = state.resultsArray[i][heightPropertyName];
+                                    var itemWidth = state.resultsArray[i][widthPropertyName];
+                                    if(config.magicColumns && needsWidthAdjust){
+                                        needsWidthAdjust = false;
+                                        config.columns = Math.floor((infinitizerInnerWidth) /(itemWidth - 1));
+                                        console.log(config.columns,infinitizerInnerWidth,itemWidth,((infinitizerInnerWidth) /(itemWidth - 1)))
+                                    }
                                     
                                     if(typeof itemHeight === 'number'){
                                         allHeights += state.resultsArray[i][heightPropertyName];
