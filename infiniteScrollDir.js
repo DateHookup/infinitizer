@@ -630,7 +630,6 @@
                                         config.columns = Math.floor((infinitizerInnerWidth) /(itemWidth - 1));
                                         console.log(config.columns,infinitizerInnerWidth,itemWidth,((infinitizerInnerWidth) /(itemWidth - 1)))
                                     }
-                                    
                                     if(typeof itemHeight === 'number'){
                                         allHeights += state.resultsArray[i][heightPropertyName];
                                     } else {
@@ -652,25 +651,15 @@
                                 numberToRequest = Math.max(Math.ceil(amtItemsToFillDeficit),0);
 
 
-                                 // * config.maxScreens
                                 if(typeof containerHeight !== 'undefined' && averageItemHeight !== 0){
 
                                     var itemsPerScreenHypothetical = (containerHeight/averageItemHeight) * config.columns;
                                     maxItems = Math.floor(itemsPerScreenHypothetical * config.maxScreens);
                                     maxItems -= (maxItems % config.columns);
                                 }
-                                /*var toConsole = {
-                                    scrollHeight:scrollHeight,
-                                    elmBottomPos:elmBottomPos,
-                                    itemsPerScreen:itemsPerScreen,
-                                    containerHeight:containerHeight,
-                                    averageItemHeight:averageItemHeight,
-                                    verticalDownLimitScrollPos:verticalDownLimitScrollPos,
-                                    scrollHeightDeficit:scrollHeightDeficit,
-                                    amtItemsToFillDeficit:amtItemsToFillDeficit,
-                                    numberToRequest:numberToRequest
-                                }*/
+                                
                                 if(Math.abs(elmBottomPos-scrollHeight) < containerHeight/2 && scrollHeight/* - adjustment*/ > containerHeight && state.resultsArray.length >= maxItems){
+                                    console.log('gg')
                                     killLosersAndAdjust();
                                 }
 
@@ -685,37 +674,6 @@
                     var scrollHeight = 0;
                     var elmHeight = 0;
                     
-                    var getHeights = function(){
-                        scrollHeight = $scrollArea.prop('scrollHeight');
-                        if(!scrollAreaIsElm){elmHeight = $elm.outerHeight();}
-                        containerHeight = $scrollArea.outerHeight();
-                        
-                        
-                        //TODO reimplement the logic below.
-
-                        /*var maxScroll = scrollHeight-containerHeight;
-
-                        //If the results elements combined height is too short to have any scroll
-                        //then call for more results.
-                        if(maxScroll < -10){
-                            
-                            callEndpoint(numberToRequest,endpointCallHandler);
-                            
-                        }*/
-                    };
-
-                    
-                    //TODO make window resize adjustment
-                    // pubSubService.subscribe('stickyPos-'+$scope.widgetNamespace,function(stickyPos){
-                    //     if(intialIsDone_fetchMoreIfNeeded){
-                    //         konsole.log('++++','stickyPos')
-                    //         // getHeights();
-                    //     }
-                    // },$scope);
-
-                    
-
-
 
 
                     var generateWinnersAndLosersObject = function(){
@@ -735,7 +693,11 @@
                         var lastOneFound = false;
                         var totalHeight = 0;
                         var adjustment = loadMoreTopButton.showing ? loadMoreTopButton.height : 0;
-                        var columns = config.columns
+
+                        adjustment += !scrollAreaIsElm ? (scrollHeight - elmHeight) : adjustment;
+
+                        var columns = config.columns;
+
                         
                         for(var i=0,l=resultsArray.length; i<l; i++){
                             var user = resultsArray[i];
@@ -923,7 +885,8 @@
                                 });
                             }
                         }
-                        //Create clone of the scrollElm.  Plop it on top.  Them perform scrollbust overflow manipulation on original.
+                        //Create clone of the scrollElm.  Plop it on top.  
+                        //Then perform scrollbust overflow manipulation on original.
                         //This hides a visible flash that scroll busting causes.
                     };
 
@@ -941,7 +904,8 @@
                         generateWinnersAndLosersObject_thenProcessStateArrays();
                         var endingTopArchiveLength = state.topArchive.length;
                         if(startingTopArchiveLength === 0 && endingTopArchiveLength !== 0){
-                            //when no topLoadingButton before destroy, but chopTopOnDestroy yields toLoadingButton when returning to infinitizer
+                            //when no topLoadingButton before destroy, 
+                            //but chopTopOnDestroy yields toLoadingButton when returning to infinitizer
                             state.scrollPos += loadMoreTopButton.height;
                         }
                         timeoutMasterService.clear();

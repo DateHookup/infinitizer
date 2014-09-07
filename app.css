@@ -26,10 +26,6 @@ body,html{margin:0;padding:0;};
   background: yellow;
 }
 
-.testInf{
-	height:200px;
-	background:pink;
-}
 .loadMoreBottom.hidden, .loadMoreTop.hidden {
   opacity: 0;
   position: absolute;
@@ -62,7 +58,7 @@ body,html{margin:0;padding:0;};
 
 .infinitizerDemo{
 	float:left;
-	width:50%;
+	width:25%;
 }
 .infinitizerItem{
 	float:left;
@@ -86,4 +82,7 @@ body,html{margin:0;padding:0;};
 	.columnsmagic .infinitizerItem{
 		width:33%;
 	}
+}
+.infinitizerInner{
+	background:orange;
 }

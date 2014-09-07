@@ -27,6 +27,13 @@
             $scope.columns = 'magic';
         }
     ])
+    app.register.controller('sofiaCtrl', [
+        '$scope','$rootScope','$location','$interval','$timeout','$q',
+        function($scope,$rootScope,$location,$interval,$timeout,$q){
+            $scope.which = 'sofia';
+            $scope.columns = '2';
+        }
+    ])
     app.register.controller('testInfCtrl', [
         '$scope','$rootScope','$location','$interval','$timeout','$q',
         function($scope,$rootScope,$location,$interval,$timeout,$q){
