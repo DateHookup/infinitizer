@@ -102,10 +102,23 @@
     app.register.directive(
         'infiniteScrollItemDir', ['screenReadyService','windowService',function(screenReadyService,windowService){
             return function($scope, $elm, attrs) {
+                // console.log($scope.$index)
+                if($scope.infinitizer.config.magicColumns){
+                    $scope.$watch('$index',function(n){
+                        console.log(n)
+                    })
+                    $elm.find('.testItem').height(Math.floor(Math.random() *100));
+
+                }
+
                 if($scope[$scope.infiniteScrollScope.itemName]){
                     var doIt = function(){
                         $scope[$scope.infiniteScrollScope.itemName][$scope.infinitizer.config.name + '_LastHeight'] = $elm.outerHeight(true);
                         $scope[$scope.infiniteScrollScope.itemName][$scope.infinitizer.config.name + '_LastWidth'] = $scope.infinitizer.config.magicColumns ? $elm.outerWidth(true) : null;
+                        
+                        if($scope.infinitizer.config.magicColumns){
+                        $scope.infinitizer.lastItemSpecs = {}
+                        }
                     };
                     screenReadyService(doIt);
                     windowService.onResize(doIt,$scope)
@@ -147,9 +160,9 @@
     app.register.directive(
         //http://stackoverflow.com/a/14426540/1242000
         'infinitizerDir', [
-            'screenReadyService','debounceService','$timeout','$interval','$q','$timeout','debounceMasterService','timeoutMasterService','icemanForScrollAdjustService','timeoutRecursiveService','$parse',
+            '$parse',
         function(
-            screenReadyService,debounceService,$timeout,$interval,$q,$timeout,debounceMasterService,timeoutMasterService,icemanForScrollAdjustService,timeoutRecursiveService,$parse
+            $parse
         ){
             return {
                 restrict:'A',
@@ -182,12 +195,10 @@
 
     app.register.directive(
         'infiniteScrollDir', [
-            'screenReadyService','debounceService','$timeout','$interval','$q','$timeout','debounceMasterService','timeoutMasterService','icemanForScrollAdjustService','timeoutRecursiveService','$parse','windowService',
+            'screenReadyService','debounceMasterService','timeoutMasterService','icemanForScrollAdjustService','timeoutRecursiveService','windowService',
         function(
-            screenReadyService,debounceService,$timeout,$interval,$q,$timeout,debounceMasterService,timeoutMasterService,icemanForScrollAdjustService,timeoutRecursiveService,$parse,windowService
+            screenReadyService,debounceMasterService,timeoutMasterService,icemanForScrollAdjustService,timeoutRecursiveService,windowService
         ){
-        debounceMasterServicex = debounceMasterService;
-        timeoutMasterServicex = timeoutMasterService;
         var cache = {};
         var getCache = function(name){
             if(typeof cache[name] === 'undefined'){
@@ -243,7 +254,8 @@
                     var config = $scope.infinitizer.config;
 
 
-                    //the scrollArea can be outside the $elm.  Like if there's non infinitizer content above the infinitizer content. like on home.
+                    //the scrollArea can be outside the $elm.  
+                    //Like if there's non infinitizer content above the infinitizer content. like on home.
                     var $scrollArea = $elm.closest('.scrollArea');
                     var scrollAreaIsElm = $scrollArea[0] === $elm[0];
                     var $resultsList = $scrollArea.find('.infinitizerResults');
@@ -251,7 +263,8 @@
                         $resultsList.addClass('clearfix');
                     }
                     $resultsList.css('z-index',1)
-                    $resultsList.css('position','relative');//to make z-index effective against invisilbe loadMoreButton click
+                    //to make z-index effective against invisilbe loadMoreButton click
+                    $resultsList.css('position','relative');
                     $scrollArea.css('position','relative');
 
                     var fetching = false;
@@ -343,7 +356,11 @@
                     };
 
                     var resetOrRestoreResults = function(){
-                        if(typeof state.resultsArray === 'undefined' || state.resultsArray.length === 0 || needToReset){
+                        if(
+                            typeof state.resultsArray === 'undefined' || 
+                            state.resultsArray.length === 0 || 
+                            needToReset
+                        ){
                             timeoutMasterService.clear();
                             isRunning_restoreToBottomTimeoutRecursive = false;
                             theClone.remove();
@@ -443,10 +460,7 @@
                             }
                             amt = amt > state.bottomArchive.length ? state.bottomArchive.length : amt;
                             amt = amt > 0 ? amt :0;
-                            // var amt = state.bottomArchive.length < numberToRequest ? state.bottomArchive.length : numberToRequest;
-                            // var modulusOfAmt = amt % config.columns;                            
-                            // amt = isAtTheEndOfResponses && amt === state.bottomArchive.length ? amt : amt - modulusOfAmt;
-                            // amt = bottomArchiveHasInitialItems && amt === 0 ? state.bottomArchive.length : amt; //case of 1 intial item in multi
+                            
                             if(amt > 0){
 
                                 isRunning_restoreToBottomTimeoutRecursive = true;
@@ -628,7 +642,6 @@
                                     if(config.magicColumns && needsWidthAdjust){
                                         needsWidthAdjust = false;
                                         config.columns = Math.floor((infinitizerInnerWidth) /(itemWidth - 1));
-                                        console.log(config.columns,infinitizerInnerWidth,itemWidth,((infinitizerInnerWidth) /(itemWidth - 1)))
                                     }
                                     if(typeof itemHeight === 'number'){
                                         allHeights += state.resultsArray[i][heightPropertyName];
@@ -652,13 +665,16 @@
 
 
                                 if(typeof containerHeight !== 'undefined' && averageItemHeight !== 0){
-
                                     var itemsPerScreenHypothetical = (containerHeight/averageItemHeight) * config.columns;
                                     maxItems = Math.floor(itemsPerScreenHypothetical * config.maxScreens);
                                     maxItems -= (maxItems % config.columns);
                                 }
                                 
-                                if(Math.abs(elmBottomPos-scrollHeight) < containerHeight/2 && scrollHeight/* - adjustment*/ > containerHeight && state.resultsArray.length >= maxItems){
+                                if(
+                                    Math.abs(elmBottomPos-scrollHeight) < containerHeight/2 && 
+                                    scrollHeight > containerHeight && 
+                                    state.resultsArray.length >= maxItems
+                                ){
                                     console.log('gg')
                                     killLosersAndAdjust();
                                 }
@@ -702,7 +718,8 @@
                         for(var i=0,l=resultsArray.length; i<l; i++){
                             var user = resultsArray[i];
                             var userPos = totalHeight;
-                            totalHeight = i % columns === 0 ? totalHeight + user[heightPropertyName] : totalHeight; //only the first of each row contribute to totalHeight
+                            //only the first of each row contribute to totalHeight
+                            totalHeight = i % columns === 0 ? totalHeight + user[heightPropertyName] : totalHeight; 
                             var pxAboveTop = i % columns === 0 ? (state.scrollPos - userPos) : previousAmountAboveTop;
                             var pxAboveTopAdjusted = pxAboveTop - adjustment;
                             var adjustedTop = config.preserveTopScreenAmt * containerHeight;
@@ -730,7 +747,8 @@
                                             
                                         }
                                         // winners.push(previousUser);
-                                        // losersTop.pop();//the one we are popping off is the winner! It was added to losers last iteration.
+                                        // losersTop.pop();//the one we are popping off is the winner! 
+                                        // It was added to losers last iteration.
                                     }
 
                                     if(firstPlaceWinner !== null){
