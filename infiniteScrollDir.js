@@ -117,7 +117,16 @@
                         $scope[$scope.infiniteScrollScope.itemName][$scope.infinitizer.config.name + '_LastWidth'] = $scope.infinitizer.config.magicColumns ? $elm.outerWidth(true) : null;
                         
                         if($scope.infinitizer.config.magicColumns){
-                        $scope.infinitizer.lastItemSpecs = {}
+                            
+
+                            if($scope.infinitizer.lastItemSpecs){
+                                console.log($scope.infinitizer.lastItemSpecs,$scope.$index % $scope.infinitizer.config.columns);
+                            }
+
+                            $scope.infinitizer.lastItemSpecs = {
+                                index:$scope.$index,
+                                height:$scope[$scope.infiniteScrollScope.itemName][$scope.infinitizer.config.name + '_LastHeight']
+                            }
                         }
                     };
                     screenReadyService(doIt);
