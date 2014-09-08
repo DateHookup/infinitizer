@@ -105,7 +105,7 @@
                 // console.log($scope.$index)
                 if($scope.infinitizer.config.magicColumns){
                     $scope.$watch('$index',function(n){
-                        console.log(n)
+                        // console.log(n)
                     })
                     $elm.find('.testItem').height(Math.floor(Math.random() *100));
 
@@ -113,20 +113,73 @@
 
                 if($scope[$scope.infiniteScrollScope.itemName]){
                     var doIt = function(){
-                        $scope[$scope.infiniteScrollScope.itemName][$scope.infinitizer.config.name + '_LastHeight'] = $elm.outerHeight(true);
-                        $scope[$scope.infiniteScrollScope.itemName][$scope.infinitizer.config.name + '_LastWidth'] = $scope.infinitizer.config.magicColumns ? $elm.outerWidth(true) : null;
+                        var thisItemHeight = $elm.outerHeight(true)
+                        $scope[$scope.infiniteScrollScope.itemName][$scope.infinitizer.config.name + '_LastHeight'] = thisItemHeight;
+                        var thisItemWidth = $scope.infinitizer.config.magicColumns ? $elm.outerWidth(true) : null;
+                        $scope[$scope.infiniteScrollScope.itemName][$scope.infinitizer.config.name + '_LastWidth'] = thisItemWidth;
                         
+
+
                         if($scope.infinitizer.config.magicColumns){
-                            
+                            var columnIndex = $scope.$index % $scope.infinitizer.config.columns;
 
-                            if($scope.infinitizer.lastItemSpecs){
-                                console.log($scope.infinitizer.lastItemSpecs,$scope.$index % $scope.infinitizer.config.columns);
-                            }
 
-                            $scope.infinitizer.lastItemSpecs = {
+                            var leftNeighborColumn = $scope.infinitizer.config.magicColumns[columnIndex - 1];
+                            var specsOfLeftNeighbor = leftNeighborColumn ? leftNeighborColumn.previousItemSpecs : null;
+
+                            var thisColumn = $scope.infinitizer.config.magicColumns[columnIndex];
+                            specsOfTopNeighbor = thisColumn ? thisColumn.previousItemSpecs : null;
+                            console.log(specsOfTopNeighbor)
+
+                            var thisItemSpecs = {
                                 index:$scope.$index,
-                                height:$scope[$scope.infiniteScrollScope.itemName][$scope.infinitizer.config.name + '_LastHeight']
+                                height:thisItemHeight
+                            };
+
+                            if(specsOfLeftNeighbor){
+
+                                // console.log('heightDif:',thisItemSpecs.height,'-',$scope.infinitizer.previousItemSpecs.height,'=',thisItemSpecs.height - $scope.infinitizer.lastItemSpecs.height)
+                                // console.log($scope.infinitizer.previousItemSpecs,$scope.$index % $scope.infinitizer.config.columns);
+
+                                var diffToLeft = specsOfLeftNeighbor.height - thisItemSpecs.height;
+                                if(diffToLeft > 0 ){
+                                    thisItemSpecs.height = specsOfLeftNeighbor.height;
+                                    $elm.height(specsOfLeftNeighbor.height);
+                                    thisItemSpecs.rowHeightDeficit = -diffToLeft;
+                                    // thisColumn.totalDeficit += thisItemSpecs.rowHeightDeficit;
+                                } else {
+                                    for(var i = 0; i < columnIndex; i++){
+                                        var leftwardColumn  = $scope.infinitizer.config.magicColumns[i];
+                                        var leftwardColumnPreviousItemSpecs  = $scope.infinitizer.config.magicColumns[i].previousItemSpecs;
+                                        var leftwardColumnPreviousItemHeight = leftwardColumnPreviousItemSpecs.height;
+                                        var diffToThat = leftwardColumnPreviousItemSpecs.height - thisItemSpecs.height; //gonna be negative
+                                        console.log(diffToThat)
+                                        // leftwardColumn.totalDeficit -= leftwardColumnPreviousItemSpecs.rowHeightDeficit;
+                                        leftwardColumn.totalDeficit = leftwardColumn.totalDeficit ? leftwardColumn.totalDeficit +  diffToThat: diffToThat;
+                                        console.log(leftwardColumn.totalDeficit)
+                                        // $elm.css({
+                                        //     'position':'relative',
+                                        //     'top':leftwardColumn.totalDeficit
+                                        // })
+                                    }                                    
+                                }
                             }
+
+                            if(specsOfTopNeighbor){
+                                console.log($scope.$index)
+                                $elm.css({
+                                    'position':'relative',
+                                    'top':thisColumn.totalDeficit
+                                })
+                            }
+
+                            $scope.infinitizer.config.magicColumns[columnIndex] = {
+                                previousItemSpecs: thisItemSpecs
+                            };
+
+                            ff = $scope.infinitizer.config.magicColumns
+                           
+
                         }
                     };
                     screenReadyService(doIt);
@@ -240,7 +293,7 @@
                         $scope.infinitizer.config.columns = typeof $scope.infinitizer.config.columns !== 'undefined' ? $scope.infinitizer.config.columns : 1;
                         if($scope.infinitizer.config.columns === 'magic'){
                             $scope.infinitizer.config.columns = 1;
-                            $scope.infinitizer.config.magicColumns = true;
+                            $scope.infinitizer.config.magicColumns = [];
                         } else {
                              $scope.infinitizer.config.magicColumns = false;
                         }
