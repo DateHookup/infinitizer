@@ -1,6 +1,6 @@
 
 window.app = (function(){
-	var app = angular.module('myApp', []);
+	var app = angular.module('myApp', ['infinitizerModule']);
 	//---
 	//This fixes links so that they don't change scroll, which  was the default behavior.
 	//https://groups.google.com/forum/#!topic/angular/bwS5kTb5Iaw
