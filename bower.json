@@ -2,7 +2,7 @@
   "name": "infinitizer",
   "version": "0.1",
   "main": [
-  	"./infiniteScrollDir.js",
+  	"./infinitizerDir.js",
   	"./windowService.js",
   	"./debounceService.js"
   ],
