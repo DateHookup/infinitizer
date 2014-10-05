@@ -1,4 +1,46 @@
-﻿    var infinitizerModule = angular.module('infinitizerModule', []);
+﻿
+var infinitizerModule = (function(){
+    var infinitizerModule = angular.module('infinitizerModule', []);
+
+    var DhUtil = function() {
+        this.validation = new validation();
+    };
+
+    DhUtil.prototype.getYOffset = function($el) {
+        var posY;
+        if (typeof $el === 'undefined' || $el === window) {
+            if (typeof(window.pageYOffset) == 'number') {
+                posY = window.pageYOffset;
+            } else {
+                posY = document.documentElement.scrollTop;
+            }
+        } else {
+            posY = $el[0].scrollTop;
+        }
+        return posY;
+    };
+    DhUtil.prototype.propertyAt = function index(objx, at, value) {
+        //when assigning values, if there is a long object chain desired, if that chain doesn exist, it will be created.
+        if (typeof at == 'string') {
+            at = at.replace(/\[(\w+)\]/g, '.$1');
+
+            return index(objx, at.split('.'), value);
+
+        } else if (at.length == 1 && value !== undefined) {
+            return objx[at[0]] = value;
+        } else if (at.length == 0) {
+            return objx;
+        } else {
+            if (typeof objx[at[0]] === 'undefined') {
+                objx[at[0]] = {};
+            }
+            return index(objx[at[0]], at.slice(1), value);
+        }
+    }
+
+    dhUtilMini = new DhUtil();
+
+
 
     infinitizerModule.factory('icemanForScrollAdjustService', ['timeoutMasterService', function (timeoutMasterService) {
 
@@ -1433,6 +1475,9 @@
         };
     }]);
 
+
+    return infinitizerModule;
+})();
 /* ... if(winnersAndLosersObject.losersTop.length > 0){
     ... var technique = 'overflow';
     ... if(technique === 'overflow'){
