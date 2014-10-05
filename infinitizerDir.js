@@ -3,7 +3,6 @@ var infinitizerModule = (function(){
     var infinitizerModule = angular.module('infinitizerModule', []);
 
     var DhUtil = function() {
-        this.validation = new validation();
     };
 
     DhUtil.prototype.getYOffset = function($el) {
@@ -38,7 +37,7 @@ var infinitizerModule = (function(){
         }
     }
 
-    dhUtilMini = new DhUtil();
+    var dhUtil = new DhUtil();
 
 
 
