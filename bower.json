@@ -1,0 +1,10 @@
+{
+  "name": "infinitizer",
+  "version": "0.1",
+  "main": [
+  	"./infiniteScrollDir.js",
+  	"./windowService.js",
+  	"./debounceService.js"
+  ],
+  "dependencies": {}
+}
