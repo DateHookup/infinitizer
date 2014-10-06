@@ -5,6 +5,7 @@
   	"./infinitizerDir.js",
   	"./windowService.js",
   	"./debounceService.js"
+  	"./infinitizer.scss"
   ],
   "dependencies": {}
 }
