@@ -131,7 +131,7 @@ var infinitizerModule = (function(){
                 clone.css({'opacity':0});
                 timeoutMasterService.manage(function(){
                     clone.remove();
-                },0)['catch'](function(){clone.remove()});
+                },100)['catch'](function(){clone.remove()});
             };
 
             timeoutMasterService.manage(function(){
