@@ -323,7 +323,7 @@ var infinitizerModule = (function(){
                 },
                 // templateUrl:'basex/infinitizerPartial.html'
                 template:'<div infinite-scroll-dir >'+
-                    '<div ng-if="!infinitizer.fetching && infinitizer.state.resultsArray.length == 0 && infinitizer.state.bottomArchive.length == 0 && infinitizer.state.topArchive.length == 0" class="scrollRepeatStatus scrollRepeatStatusEmpty">None at this time.</div>' +
+                    '<div ng-if="!infinitizer.fetching && infinitizer.state.resultsArray.length == 0 && infinitizer.state.bottomArchive.length == 0 && infinitizer.state.topArchive.length == 0" class="infinitizerStatus infinitizerStatusEmpty">None at this time.</div>' +
                     '<ul class="infinitizerResults">'+
                         '<li class="infinitizerItem" infinite-scroll-item-dir transcope  >'+
                         '</li>'+
@@ -410,7 +410,7 @@ var infinitizerModule = (function(){
     }]);
 
     infinitizerModule.factory('makeStatusDisplayService', ['debounceMasterService', function (debounceMasterService) {
-        return function($scope,$resultsList,restoreToTop,$scrollRepeatStatusInitializing){
+        return function($scope,$resultsList,restoreToTop,$infinitizerStatusInitializing){
             var state = $scope.infinitizer.state;
             var config = $scope.infinitizer.config;
 
@@ -424,7 +424,7 @@ var infinitizerModule = (function(){
             var loadMoreButtonClass = function(placement,text,className,arrayName,alwaysInstant){
                 this.alwaysInstant = !!alwaysInstant;
                 this.className = className;
-                this.$el = $('<div class="'+className+' scrollRepeatStatus hidden">'+text+'</div>');
+                this.$el = $('<div class="'+className+' infinitizerStatus hidden">'+text+'</div>');
                 this.showing = false;
                 $resultsList[placement](this.$el);
                 this.height = this.$el.outerHeight();
@@ -474,22 +474,22 @@ var infinitizerModule = (function(){
             };
 
 
-            var loadMoreTopButton = new loadMoreButtonClass('before','Load previous','scrollRepeatStatusShowPrevious','topArchive',true);
+            var loadMoreTopButton = new loadMoreButtonClass('before','Load previous','infinitizerStatusShowPrevious','topArchive',true);
             loadMoreTopButton.$el.on('click',function(){
 
                 restoreToTop();
             })
 
-            var loadMoreBottomButton = new loadMoreButtonClass('after','Loading more ...','scrollRepeatStatusLoadingBelow','bottomArchive');
+            var loadMoreBottomButton = new loadMoreButtonClass('after','Loading more ...','infinitizerStatusLoadingBelow','bottomArchive');
 
-            var endOfResultsButton = new loadMoreButtonClass('after','End of results','scrollRepeatStatusEnd','bottomArchive',true);
+            var endOfResultsButton = new loadMoreButtonClass('after','End of results','infinitizerStatusEnd','bottomArchive',true);
 
 
             var loadingMoreInitialIsDone = false;
             var loadingMoreInitialDone = function(){
                 if(!loadingMoreInitialIsDone && $scope.infinitizer.state.resultsArray.length > 0){
                     loadingMoreInitialIsDone = true;
-                    $scrollRepeatStatusInitializing.addClass('hidden');
+                    $infinitizerStatusInitializing.addClass('hidden');
                 }
             };
 
@@ -623,8 +623,8 @@ var infinitizerModule = (function(){
                 //     console.log('bad',x)
                 // });
                 var $scrollArea = $elm.closest('.infinitizerScrollArea');
-                var $scrollRepeatStatusInitializing = $('<div class="scrollRepeatStatusInitializing scrollRepeatStatus">LOADING</div>');
-                $scrollArea.before($scrollRepeatStatusInitializing);
+                var $infinitizerStatusInitializing = $('<div class="infinitizerStatusInitializing infinitizerStatus">LOADING</div>');
+                $scrollArea.before($infinitizerStatusInitializing);
 
 
                 var onceReady = $scope.$watch('infintizerReady',function(n){
@@ -764,7 +764,7 @@ var infinitizerModule = (function(){
                             };
 
 
-                            var statusDisplays = makeStatusDisplayService($scope,$resultsList,restoreToTop,$scrollRepeatStatusInitializing);
+                            var statusDisplays = makeStatusDisplayService($scope,$resultsList,restoreToTop,$infinitizerStatusInitializing);
                             /*
                                 {
                                     loadMoreBottomButton:loadMoreBottomButton,
