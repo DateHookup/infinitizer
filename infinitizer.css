@@ -1,0 +1,64 @@
+.infinitizerResults{
+	margin:0;
+	padding:0;
+	list-style:none;
+}
+.infinitizerItem{
+	display:block;
+}
+.infinitizerInner{
+	min-height:100%;
+	overflow:auto;
+}
+
+.infinitizerStatusInitializing{
+	z-index:2;
+}
+
+ .spinnerWrap{
+ 	z-index:1;
+ }
+
+ .infinitizerScrollArea{
+ 	z-index:3;
+ }
+
+.infinitizerStatus{
+	height:20px;
+	padding:14px;
+	text-align:center;
+	background: $grey2;
+}
+.infinitizerStatus.hidden{
+	opacity:0;
+	position:absolute;
+	width:50%;
+	z-index:0;
+}
+.infinitizerStatusInitializing{
+	display:block;
+	position:absolute;
+	width:100%;
+}
+.infinitizerStatusInitializing.hidden{
+	opacity:0;
+	z-index:0;
+}
+.infinitizerStatusShowPrevious{
+	color: $blue2;
+}
+.infinitizerStatusLoadingBelow.hidden,.infinitizerStatusEnd.hidden{
+	margin-top:-100px;
+}
+
+.infinitizerStatusEmpty{
+	position:absolute;
+	height:100%;
+	width:100%;
+}
+
+.infinitizerScrollArea {
+	overflow-x: hidden;
+	overflow-y: scroll;
+	-webkit-overflow-scrolling: touch;
+}

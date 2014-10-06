@@ -104,6 +104,8 @@
 		<script src="dhUtil.js"></script>
 		<script src="angular.js"></script>
 
+		<link rel="stylesheet" href="infinitizer.css"/>
+
 		<script src="infinitizerDir.js"></script>
 		<script src="windowService.js"></script>
 		<script src="debounceService.js"></script>
@@ -130,7 +132,7 @@
 							{{infinitizer.state.topArchive.length}} -- 
 							{{!!page}}
 						</div>
-						<div class="scrollArea testInf" infinitizer-dir="item in infinitizer.state.resultsArray" style="-webkit-transform: translate3d(0,0,0)" ng-class="'columns'+columns">
+						<div class="scrollArea infinitizerScrollArea testInf" infinitizer-dir="item in infinitizer.state.resultsArray" style="-webkit-transform: translate3d(0,0,0)" ng-class="'columns'+columns">
 							<div class="user searchResultCard" fade-in-dir>
 
 								<div class="testItem">

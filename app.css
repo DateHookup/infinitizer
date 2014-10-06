@@ -12,16 +12,16 @@ body,html{margin:0;padding:0;};
 	height:100%;
 	overflow-x:hidden;
 	overflow-y: scroll; /* has to be scroll, not auto */
-	-webkit-overflow-scrolling: touch; //this breaks perspective in translate3d of nested elements
+	-webkit-overflow-scrolling: touch; 
 
 }
-.noScrollArea{
+/*.noScrollArea{
 	height:100%;
 	overflow-y:hidden;
 	overflow:hidden;
-}
+}*/
 
-.loadMoreBottom, .loadMoreTop {
+/*.loadMoreBottom, .loadMoreTop {
   height: 100px;
   background: yellow;
 }
@@ -36,18 +36,13 @@ body,html{margin:0;padding:0;};
 .loadMoreBottom.hidden {
   margin-top: -100px;
 }
-
+*/
 .testInf{
 	height:200px;
 	background:pink;
 }
 
-.infinitizer ul,.infinitizer ul{
-	display:block;
-	list-style: none;
-	margin:0;
-	padding:0;	
-}
+
 .goButton{
 	float:right;
 	background:green;
@@ -86,5 +81,9 @@ body,html{margin:0;padding:0;};
 	}
 }
 .infinitizerInner{
+	min-height: 100%;
 	background:orange;
+}
+.infinitizerResults{
+	min-height:100%;
 }
