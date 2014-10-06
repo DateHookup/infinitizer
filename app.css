@@ -60,6 +60,7 @@ body,html{margin:0;padding:0;};
 .infinitizerDemo{
 	float:left;
 	width:25%;
+	position:relative;
 }
 .infinitizerItem{
 	float:left;

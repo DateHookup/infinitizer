@@ -622,7 +622,7 @@ var infinitizerModule = (function(){
                 // xxx['catch'](function(x){
                 //     console.log('bad',x)
                 // });
-                var $scrollArea = $elm.closest('.scrollArea');
+                var $scrollArea = $elm.closest('.infinitizerScrollArea');
                 var $scrollRepeatStatusInitializing = $('<div class="scrollRepeatStatusInitializing scrollRepeatStatus">LOADING</div>');
                 $scrollArea.before($scrollRepeatStatusInitializing);
 
