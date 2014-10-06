@@ -4,7 +4,7 @@
   "main": [
   	"./infinitizerDir.js",
   	"./windowService.js",
-  	"./debounceService.js"
+  	"./debounceService.js",
   	"./infinitizer.scss"
   ],
   "dependencies": {}
