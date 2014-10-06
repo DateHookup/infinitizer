@@ -3,35 +3,71 @@
         function ($http, $q, $log, $window, $timeout,$rootScope,debounceService) {
 
 
+        var debounce = function($timeout, func, threshold, execAsap, firstAsap) {
+            var timeout;
+            var firstAsapClear = false;
+            if (typeof firstAsap === 'undefined' || firstAsap === null || firstAsap === false) {
+                firstAsap = false;
+            } else {
+                firstAsapClear = true;
+            }
+            return function debounced() {
+                var obj = this,
+                    args = arguments;
 
-    	var windowData = {};
-    	var jWindow = $($window);
+                function delayed() {
+                    if (!execAsap)
+                        func.apply(obj, args);
+                    if (firstAsap) {
+                        firstAsapClear = true;
+                    }
+                    timeout = null;
+                };
+
+                if (timeout) {
+                    $timeout.cancel(timeout);
+                } else if (execAsap) {
+                    func.apply(obj, args);
+                } else if (firstAsapClear) {
+                    console.log('FAST')
+                    func.apply(obj, args);
+                    firstAsapClear = false;
+                }
+
+                timeout = $timeout(delayed, threshold || 100);
+            };
+        }
+
+
+
+        var windowData = {};
+        var jWindow = $($window);
         windowData.jWindow = jWindow;
-    	//Derived from http://www.paulirish.com/2009/throttled-smartresize-jquery-event-handler/
-    	//Debouncing prevents rapid fire resize events.
-    	//event is only fired if it's been still for a moment.
-    	//This is a service.  Once instantiated, the listener will persist if all instantiations die.
-    	//It's also a singleton, so only one listener can exist at a time.
-    	//On resize event, update width and height properties.
+        //Derived from http://www.paulirish.com/2009/throttled-smartresize-jquery-event-handler/
+        //Debouncing prevents rapid fire resize events.
+        //event is only fired if it's been still for a moment.
+        //This is a service.  Once instantiated, the listener will persist if all instantiations die.
+        //It's also a singleton, so only one listener can exist at a time.
+        //On resize event, update width and height properties.
 
         var scrollAmt = 0;
 
         var $appContainer = $('.staticHtmlThatWrapsApp');
-    	var setData = function(){
-    		windowData.width = jWindow.width();
+        var setData = function(){
+            windowData.width = jWindow.width();
             windowData.appWidth = $appContainer.width();
 
-    		// windowData.height = jWindow.height() - scrollAmt;
+            // windowData.height = jWindow.height() - scrollAmt;
             //IOS7 Ipad content is a little taller than the window.  Window innerHeight helps fix this. 
             windowData.height = window.innerHeight;
 
-    	}
+        }
 
-    	setData();
+        setData();
 
         var deb = debounceService(100);
 
-    	windowData.onResize = function(cb,$scope){
+        windowData.onResize = function(cb,$scope){
             var eventName = 'resize';
 
             if(typeof $scope !== 'undefined'){
@@ -40,34 +76,45 @@
                     jWindow.off(eventName);
                 });
             }
+
+
             
-            jWindow.on(
-                eventName,
-                function(){
-                    deb.reset(function(){
-                        if($rootScope.signUpModeOff){
-                            jWindow.scrollTop(0);
-                            console.log('jWindow.scrollTop(0)')
-                        }
-                        console.log('xxx')
-                        cb.call(null,arguments);
-                    },0)
+            // jWindow.on(
+            //     eventName,
+            //     function(){
+            //         deb.reset(function(){
+            //             if($rootScope.signUpModeOff){
+            //                 jWindow.scrollTop(0);
+            //             }
+            //             console.log('xxx')
+            //             cb.call(null,arguments);
+            //         },0)
+            //     }
+            // );
+
+
+            jWindow.on(eventName,debounce($timeout,function(){
+                if($rootScope.signUpModeOff){
+                    jWindow.scrollTop(0);
+                    console.log('jWindow.scrollTop(0)')
                 }
-            );
-    		// jWindow.on(eventName,dhUtil.debounce($timeout,function(){
+                
+                cb.call(null,arguments);
+            }));
+            // jWindow.on(eventName,dhUtil.debounce($timeout,function(){
       //           if($rootScope.signUpModeOff){
       //               jWindow.scrollTop(0);
       //               console.log('jWindow.scrollTop(0)')
       //           }
                 
-	    	// 	cb.call(null,arguments);
-	    	// }));
+            //  cb.call(null,arguments);
+            // }));
 
                   
-    	};
-    	windowData.onResize(function(){
-    		setData();
-    	})
+        };
+        windowData.onResize(function(){
+            setData();
+        })
 
         windowData.resize = function(){
             jWindow.resize()
@@ -101,7 +148,7 @@
 
         },null);
 
-    	window.onscroll = function () { 
+        window.onscroll = function () { 
             console.log('scroll',jWindow.scrollTop())
             if(focus && !resized){
                 var limit = Math.max( document.body.scrollHeight, document.body.offsetHeight, 
