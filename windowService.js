@@ -29,7 +29,6 @@
                 } else if (execAsap) {
                     func.apply(obj, args);
                 } else if (firstAsapClear) {
-                    console.log('FAST')
                     func.apply(obj, args);
                     firstAsapClear = false;
                 }
@@ -96,7 +95,6 @@
             jWindow.on(eventName,debounce($timeout,function(){
                 if($rootScope.signUpModeOff){
                     jWindow.scrollTop(0);
-                    console.log('jWindow.scrollTop(0)')
                 }
                 
                 cb.call(null,arguments);

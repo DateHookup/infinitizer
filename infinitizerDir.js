@@ -803,7 +803,6 @@ var infinitizerModule = (function(){
                                     state.resultsArray.length === 0 || 
                                     needToReset
                                 ){
-                                    console.log('clear 1')
                                     timeoutMasterService.clear();
                                     isRunning_restoreToBottomTimeoutRecursive = false;
                                     theClone.remove();
@@ -1074,9 +1073,12 @@ var infinitizerModule = (function(){
                             }
                             var destroyed = false;
                             var fetchMoreIfNeeded = function(){
+
+
                                 // console.trace()
                                 if(!destroyed){
                                     if(state.resultsArray.length !== 0){
+
                                         
                                     /*
                                            ______________________
@@ -1183,13 +1185,17 @@ var infinitizerModule = (function(){
                                         amtItemsToFillDeficit += config.columns;
                                         amtItemsToFillDeficit -= amtItemsToFillDeficit % config.columns;
                                         numberToRequest = Math.max(Math.ceil(amtItemsToFillDeficit),0);
-
                                         if(typeof containerHeight !== 'undefined' && averageItemHeight !== 0){
                                             var itemsPerScreenHypothetical = (containerHeight/averageItemHeight) * config.columns;
                                             maxItems = Math.floor(itemsPerScreenHypothetical * config.maxScreens);
                                             maxItems -= (maxItems % config.columns);
                                         }
-                                        
+                                        // console.log('containerHeight',containerHeight)
+                                        // console.log(
+                                        //     Math.abs(elmBottomPos-scrollHeight) < containerHeight/2 , 
+                                        //     scrollHeight > containerHeight ,
+                                        //     state.resultsArray.length >= maxItems
+                                        // )
                                         if(
                                             Math.abs(elmBottomPos-scrollHeight) < containerHeight/2 && 
                                             scrollHeight > containerHeight && 
@@ -1208,7 +1214,9 @@ var infinitizerModule = (function(){
                             var scrollHeight = 0;
                             var elmHeight = 0;
                             
-
+                            windowService.onResize(function(){
+                                containerHeight = $scrollArea.outerHeight();
+                            },$scope);
 
                             var generateWinnersAndLosersObject = function(){
 
@@ -1381,7 +1389,7 @@ var infinitizerModule = (function(){
                             
 
                             var theClone = $();
-                            var killLosersAndAdjust = function(cb){                        
+                            var killLosersAndAdjust = function(cb){     
                                 if(theClone.length === 0 && state.bottomArchive.length !== 0){
                                     var cachedCb;
 
