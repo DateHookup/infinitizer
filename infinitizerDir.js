@@ -41,7 +41,7 @@ var infinitizerModule = (function(){
 
 
 
-    infinitizerModule.factory('icemanForScrollAdjustService', ['timeoutMasterService', function (timeoutMasterService) {
+    infinitizerModule.factory('icemanForScrollAdjustService', ['timeoutMasterService','screenReadyService', function (timeoutMasterService,screenReadyService) {
 
         return function(settings){
             var defaults = {
@@ -128,10 +128,15 @@ var infinitizerModule = (function(){
                 
                 settings.$scrollArea.off('scroll.iceLock');
                 settings.icemanDoneFun();
-                clone.css({'opacity':0});
+                
+                
                 timeoutMasterService.manage(function(){
+                    clone.css({'opacity':0});
+                    screenReadyService(function(){
                     clone.remove();
+                    })
                 },100)['catch'](function(){clone.remove()});
+                
             };
 
             timeoutMasterService.manage(function(){
