@@ -916,6 +916,10 @@ var infinitizerModule = (function(){
 
                                         var doSimpleWay = true;
 
+                                        if($ && $.ua && $.ua.os && $.ua.os.name === 'Android'){
+                                            doSimpleWay = false;
+                                        }
+
                                         var simpleWay = function(){
                                             for(var i=0,l=amt; i<l;i++){
                                                 // console.log($scope.infinitizer.state.bottomArchive[i].basics.username)
@@ -940,8 +944,8 @@ var infinitizerModule = (function(){
 
                                             var idealChunkAmt = 8;
                                             
-                                            var oldWay = false;
-                                            var waitAmt = oldWay ? 0 : 2000;
+                                            var oldWay = true;
+                                            var waitAmt = 1000;
 
                                             timeoutRecursiveService(
                                                 Math.ceil(amt/idealChunkAmt),
@@ -953,7 +957,6 @@ var infinitizerModule = (function(){
 
 
                                                     if(state.bottomArchive.length > 0) {
-
                                                         if(oldWay){
                                                             if(!config.blockFilter(state.bottomArchive[0])){
                                                                 state.resultsArray.push(state.bottomArchive[0]);
@@ -1457,8 +1460,11 @@ var infinitizerModule = (function(){
                             });
                             */
                             $scrollArea.on('scroll',function(e){
-                                window.lastScrollTime = new Date();
+                                
                                 state.scrollPos = dhUtil.getYOffset($scrollArea);
+                                if(window.lastScrollTime && window.lastScrollTime.set){
+                                    window.lastScrollTime.set({date:new Date(),pos:state.scrollPos,context:'infinitizer-'+config.name});
+                                }
                                 var deb = debounceMasterService.manage('scrollDeb_'+config.name,function(){
                                     fetchMoreIfNeeded();
                                 },100,true,$scope);   
