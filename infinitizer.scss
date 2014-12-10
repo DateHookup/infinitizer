@@ -24,10 +24,14 @@
  }
 
 .infinitizerStatus{
-	height:20px;
-	padding:14px;
+	height:48px;
 	text-align:center;
 	background: $grey2;
+	clear:both;
+}
+.infinitizerStatusInner{
+	height:19px;
+	padding:14px;
 }
 .infinitizerStatus.hidden{
 	opacity:0;
@@ -61,4 +65,19 @@
 	overflow-x: hidden;
 	overflow-y: scroll;
 	-webkit-overflow-scrolling: touch;
+}
+
+%infinitizerClearfixBeforeAfter{
+  content: " "; display: table;
+}
+%infinitizerClearfixAfter{
+  clear: both;
+}
+@mixin infinitizerClearfix(){
+  *zoom:1;
+  &:before, &:after {@extend %infinitizerClearfixBeforeAfter;}
+  &:after {@extend %infinitizerClearfixAfter;}
+}
+.infinitizerColumns .infinitizerStatus{
+	@include clearfix;
 }

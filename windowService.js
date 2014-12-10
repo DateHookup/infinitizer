@@ -1,7 +1,24 @@
     infinitizerModule.factory('windowService', [
-        '$http', '$q', '$log', '$window', '$timeout','$rootScope','debounceService',
-        function ($http, $q, $log, $window, $timeout,$rootScope,debounceService) {
+        '$http', '$q', '$log', '$window', '$timeout','$rootScope','debounceService','$interval',
+        function ($http, $q, $log, $window, $timeout,$rootScope,debounceService,$interval) {
+        var body = $('body');
 
+        var lastWindowHeight = 0; 
+        $interval(function(){
+            //every second, check the inner height, if its different than what's on record, trigger a window resize
+            //this is for safety
+            //sometimes the url bar appearing/disappearing or onscreen keyboard doesn't cause a window.resize event
+            var innerHeight = window.innerHeight;
+            if(innerHeight !== lastWindowHeight){
+                setData(innerHeight);
+                jWindow.trigger('resize');
+                
+            }
+
+            // console.log('window',window.innerHeight);
+                // console.log('body',body.height());
+            
+        },1000)
 
         var debounce = function($timeout, func, threshold, execAsap, firstAsap) {
             var timeout;
@@ -52,21 +69,23 @@
         var scrollAmt = 0;
 
         var $appContainer = $('.staticHtmlThatWrapsApp');
-        var setData = function(){
+        var setData = function(innerHeight){
             windowData.width = jWindow.width();
             windowData.appWidth = $appContainer.width();
 
             // windowData.height = jWindow.height() - scrollAmt;
             //IOS7 Ipad content is a little taller than the window.  Window innerHeight helps fix this. 
-            windowData.height = window.innerHeight;
+            windowData.height = innerHeight;
+            lastWindowHeight = innerHeight;
 
         }
 
-        setData();
+        setData(window.innerHeight);
 
         var deb = debounceService(100);
 
         windowData.onResize = function(cb,$scope){
+            
             var eventName = 'resize';
 
             if(typeof $scope !== 'undefined'){
@@ -96,9 +115,8 @@
                 if($rootScope.signUpModeOff){
                     jWindow.scrollTop(0);
                 }
-                
                 cb.call(null,arguments);
-            }));
+            },100));
             // jWindow.on(eventName,dhUtil.debounce($timeout,function(){
       //           if($rootScope.signUpModeOff){
       //               jWindow.scrollTop(0);
@@ -111,7 +129,7 @@
                   
         };
         windowData.onResize(function(){
-            setData();
+            setData(window.innerHeight);
         })
 
         windowData.resize = function(){

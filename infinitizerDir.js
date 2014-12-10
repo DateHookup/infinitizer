@@ -41,7 +41,7 @@ var infinitizerModule = (function(){
 
 
 
-    infinitizerModule.factory('icemanForScrollAdjustService', ['timeoutMasterService','screenReadyService', function (timeoutMasterService,screenReadyService) {
+    infinitizerModule.factory('iceScrollService', ['timeoutMasterService','screenReadyService', function (timeoutMasterService,screenReadyService) {
 
         return function(settings){
             var defaults = {
@@ -56,14 +56,14 @@ var infinitizerModule = (function(){
                 scrollHeight:settings.$scrollArea.prop('scrollHeight'),
                 elmHeight:settings.$scrollArea.height(),
                 scrollPos:dhUtil.getYOffset(settings.$scrollArea),
-                icemanDoneFun:function(){},
+                iceScrollDoneFun:function(){},
                 getAdjustment:function(){return 0},
                 columns:1
             };
             settings = $.extend(defaults,settings)
             for(var key in settings){
                 if(settings[key] === 'required'){
-                    throw 'icemanForScrollAdjustService requires ' + key
+                    throw 'iceScrollService requires ' + key
                 }
             }            
             var total = 0;
@@ -127,7 +127,7 @@ var infinitizerModule = (function(){
                 // $scrollArea.css('opacity','1');
                 
                 settings.$scrollArea.off('scroll.iceLock');
-                settings.icemanDoneFun();
+                settings.iceScrollDoneFun();
                 
                 
                 timeoutMasterService.manage(function(){
@@ -140,7 +140,7 @@ var infinitizerModule = (function(){
             };
 
             timeoutMasterService.manage(function(){
-                settings.operation(innerWidth,function(icemanDoneCb){
+                settings.operation(innerWidth,function(iceScrollDoneCb){
                     timeoutMasterService.manage(finishedFun,0)['catch'](finishedFun);
                 });
             },100)['catch'](finishedFun);
@@ -315,9 +315,23 @@ var infinitizerModule = (function(){
                 replace: true,
                 scope: true,
                 compile: function (tElement, tAttrs, transclude) {
+                    // console.log(tAttrs)
                   var rpt = document.createAttribute('ng-repeat');
-                  rpt.nodeValue = tAttrs.infinitizerDir;
-                  tElement.find('.infinitizerItem')[0].attributes.setNamedItem(rpt);
+
+                  var ngInit = document.createAttribute('ng-init');
+
+                  var attrSplit = tAttrs.infinitizerDir.split(' in ');
+                  var itemName = attrSplit[0]
+                  // rpt.nodeValue = tAttrs.infinitizerDir;// + ' track by $index';
+                  rpt.nodeValue = 'itemx in ' + attrSplit[1] + ' track by itemx.repeatIndex';
+                  ngInit.nodeValue = "{a: " + itemName + "= itemx.repeatItem}";
+
+                  // rpt.nodeValue = tAttrs.infinitizerDir  + ' track by $index';
+                  // rpt.nodeValue = tAttrs.infinitizerDir  + ' track by item.trackId';
+                  // rpt.nodeValue = tAttrs.infinitizerDir  + ' track by user.userID';
+                  var itemEl = tElement.find('.infinitizerItem')[0];
+                  itemEl.attributes.setNamedItem(rpt);
+                  itemEl.attributes.setNamedItem(ngInit);
                   // tElement[0].children[0].attributes.setNamedItem(rpt);
                   return function (scope, element, attr) {
                     var ngRepeatLikeStringSplit = attr.infinitizerDir.split(' in ');
@@ -327,10 +341,46 @@ var infinitizerModule = (function(){
                   }        
                 },
                 // templateUrl:'basex/infinitizerPartial.html'
-                template:'<div infinite-scroll-dir >'+
+                /*template:'<div infinite-scroll-dir >'+
                     '<div ng-if="!infinitizer.fetching && infinitizer.state.resultsArray.length == 0 && infinitizer.state.bottomArchive.length == 0 && infinitizer.state.topArchive.length == 0" class="infinitizerStatus infinitizerStatusEmpty">None at this time.</div>' +
                     '<ul class="infinitizerResults">'+
                         '<li class="infinitizerItem" infinite-scroll-item-dir transcope  >'+
+                        '</li>'+
+                    '</ul>'+
+                '</div>'*/
+                template:'<div infinite-scroll-dir >'+
+                    // '<div ng-if="!infinitizer.fetching && infinitizer.state.resultsArray.length == 0 && infinitizer.state.bottomArchive.length == 0 && infinitizer.state.topArchive.length == 0" class="infinitizerStatus infinitizerStatusEmpty">None at this time.</div>' +
+                    '<ul class="infinitizerResults" ng-class="{infinitizerColumns: infinitizer.config.columns > 1}">'+
+                        '<li class="infinitizerStatus">'+
+                            '<div ng-switch on="!!(infinitizerInitializing)">'+
+                                '<div ng-switch-when="true" class="infinitizerStatusInner">'+
+                                    // 'Initializing...'+
+                                '</div>'+
+                                '<div ng-switch-default class="infinitizerStatusShowLink">'+
+                                    '<div ng-click="infinitizer.loadMoreTopClick()" class ="infinitizerStatusInner">'+
+                                        '<span ng-if="infinitizer.state.topArchive.length">Show previous</span>'+
+                                    '</div>'+
+                                '</div>'+
+                            '</div>'+
+                        '</li>'+
+                        '<li class="infinitizerItem" infinite-scroll-item-dir transcope  >'+
+                        '</li>'+
+                        '<li class="infinitizerStatus">'+
+                            '<div ng-switch on="!!infinitizerInitializing || !!(infinitizer.fetching || infinitizer.state.bottomArchive.length)">'+
+                                '<div ng-switch-when="true">'+
+                                    '<div ng-switch on="!!infinitizerInitializing || !notInfiniteEnough || !!(infinitizer.fetching  || (infinitizer.state.bottomArchive.length && infinitizer.isRunning_restoreToBottomTimeoutRecursive))">'+
+                                        '<div ng-switch-when="true" class="infinitizerStatusInner">'+
+                                            'Loading ...'+
+                                        '</div>'+
+                                        '<div ng-switch-default ng-click="infinitizer.loadMoreBottomClick()"  class="infinitizerStatusShowLink infinitizerStatusInner">'+
+                                            'Load More'+
+                                        '</div>'+
+                                    '</div>'+
+                                '</div>'+
+                                '<div ng-switch-when="false" class="infinitizerStatusInner">'+
+                                    'End of results'+
+                                '</div>'+
+                            '</div>'+
                         '</li>'+
                     '</ul>'+
                 '</div>'
@@ -535,7 +585,21 @@ var infinitizerModule = (function(){
 
 
 
-            allButtonsManage();
+            // allButtonsManage();
+
+
+            return {
+                loadMoreBottomButton:{
+                    showing:false,
+                    height:0
+                },
+                loadMoreTopButton:{
+                    showing:false,
+                    height:0
+                },
+                allButtonsManage:function(){}
+            }
+
             return {
                 loadMoreBottomButton:loadMoreBottomButton,
                 loadMoreTopButton:loadMoreTopButton,
@@ -547,13 +611,13 @@ var infinitizerModule = (function(){
 
     
 
-
+    var repeatIndex = 0;
 
     infinitizerModule.directive(
         'infiniteScrollDir', [
-            'screenReadyService','debounceMasterService','timeoutMasterService','icemanForScrollAdjustService','timeoutRecursiveService','windowService','infinitizerCacheService','$rootScope','$timeout','debounceService','makeStatusDisplayService',
+            'screenReadyService','debounceMasterService','timeoutMasterService','iceScrollService','timeoutRecursiveService','windowService','infinitizerCacheService','$rootScope','$timeout','debounceService','makeStatusDisplayService',
         function(
-            screenReadyService,debounceMasterService,timeoutMasterService,icemanForScrollAdjustService,timeoutRecursiveService,windowService,infinitizerCacheService,$rootScope,$timeout,debounceService,makeStatusDisplayService
+            screenReadyService,debounceMasterService,timeoutMasterService,iceScrollService,timeoutRecursiveService,windowService,infinitizerCacheService,$rootScope,$timeout,debounceService,makeStatusDisplayService
         ){
 
 
@@ -561,7 +625,8 @@ var infinitizerModule = (function(){
             controller: ['$scope',function($scope){
                 $scope.infiniteScrollScope = $scope;
                 $scope.scrollPos = 0;
-
+                $scope.infinitizerInitializing = true;
+                $scope.notInfiniteEnough = false;
                 var bootstrap = function(){
                     var once = $scope.$watch($scope.pageName + '_infinitizer', function(infinitizerSettingsFromCtrl){
                         if(infinitizerSettingsFromCtrl){
@@ -589,13 +654,49 @@ var infinitizerModule = (function(){
                             $scope.infinitizer.purgeBlocked = function(){
                                 for(var i = state.resultsArray.length; i--; ){
                                 // for(var i=0,l=state.resultsArray.length;i<l;i++){
-                                    if($scope.infinitizer.config.blockFilter(state.resultsArray[i])){
+                                    if($scope.infinitizer.config.blockFilter(state.resultsArray[i].repeatItem)){
                                         state.resultsArray.splice(i,1);
                                     }
                                 }
                             };
                             $scope.infinitizer.purgeBlocked();
                             $scope.infintizerReady = true;
+
+
+
+                            
+
+
+
+                            /*$scope.$watch('infinitizerInitializing',function(v){
+                                console.log('-----------infinitizerInitializing',v)
+                            })
+
+                            $scope.$watch('infinitizer.state.topArchive.length',function(v){
+                                console.log('-----------infinitizer.state.topArchive.length',v)
+                            })
+
+                            $scope.$watch(
+                                function(){
+                                    return !!($scope.infinitizer.fetching || $scope.infinitizer.state.bottomArchive.length)
+                                },
+                                function(v){
+                                    console.log('-----------is not end of results condition',v)
+                                }
+                            );
+
+                            $scope.$watch(
+                                function(){
+                                    return !!($scope.infinitizer.fetching  || ($scope.infinitizer.state.bottomArchive.length && $scope.infinitizer.isRunning_restoreToBottomTimeoutRecursive))
+                                },
+                                function(v){
+                                    console.log('-----------is loading condition',v)
+                                }
+                            );*/
+
+                           
+
+
                         }
                     });
                 };
@@ -613,12 +714,41 @@ var infinitizerModule = (function(){
                         bootstrap();
                     }
                 });
+
+
+
+
+                
+
+                
                     
                 
                 
 
             }],
             link:function($scope, $elm, attrs) {
+
+                var isAndroid = function(){
+                    // return true;
+                    return $ && $.ua && $.ua.os && $.ua.os.name === 'Android';
+                };
+
+                var isAndroid4dot0 = function(){
+                    var toReturn = false;
+                    if(isAndroid()){
+                        var osVersionSplit = $.ua.os.version.split('.');
+                        var osVersionMajor = osVersionSplit[0];
+                        var osVersionMinor = osVersionSplit[1];
+                        if(+osVersionMajor === 4 && +osVersionMinor === 0){
+                            toReturn = true;
+                        }
+                    }
+                    return toReturn;
+                };
+                if(isAndroid4dot0()){
+                    $scope.notInfiniteEnough = true;
+                }
+
 
                 // var xxx  = $timeout(function(x){
                 //     console.log('good',x)
@@ -628,8 +758,8 @@ var infinitizerModule = (function(){
                 //     console.log('bad',x)
                 // });
                 var $scrollArea = $elm.closest('.infinitizerScrollArea');
-                var $infinitizerStatusInitializing = $('<div class="infinitizerStatusInitializing infinitizerStatus">LOADING</div>');
-                $scrollArea.before($infinitizerStatusInitializing);
+                //$scrollArea.css('position','relative'); doINeedThis
+                //infinitizerStatusInitializing
 
 
                 var onceReady = $scope.$watch('infintizerReady',function(n){
@@ -664,6 +794,11 @@ var infinitizerModule = (function(){
                             
 
                             $scope.infinitizer.fetching = false;
+                            $scope.infinitizerInitializing = false;
+                            $scope.infinitizer.infinitizerInitializing = false;
+                            if($scope.pullToRefreshScope){
+                                $scope.pullToRefreshScope.infinitizerInitializing = false;
+                            }
                             var containerHeight;
                             var numberToRequest = config.initialFetchAmt;
                             numberToRequest += numberToRequest % config.columns;
@@ -674,45 +809,59 @@ var infinitizerModule = (function(){
                             
                             
 
-                            var iceManHelper = function(doThis){
-                                theClone = icemanForScrollAdjustService({
-                                    $scrollArea:$scrollArea,
-                                    itemArray:state.resultsArray,
-                                    itemSelector:'.infinitizerItem',
-                                    innerWrapSelector:'.infinitizerInner',
-                                    scrollContainerHeight:containerHeight,
-                                    scrollHeight:scrollHeight,
-                                    elmHeight:elmHeight,
-                                    scrollPos:state.scrollPos,
-                                    columns:config.columns,
-                                    icemanDoneFun:function(){
-                                        theClone = $();
-                                    },
-                                    getInnerWidthFun:function(){
-                                        // return $infinitizerInner.width();
-                                        return '100%';
-                                    },
-                                    getItemHeightFun:function(i,itemArray){
-                                        var heightPropertyName = config.name + '_LastHeight';
-                                        return itemArray[i][heightPropertyName];
-                                    },
-                                    getAdjustment:function(){
-                                        var adjustment = statusDisplays.loadMoreTopButton.showing ? 2*statusDisplays.loadMoreTopButton.height : statusDisplays.loadMoreTopButton.height;
-                                        if(!scrollAreaIsElm){
-                                            adjustment += (scrollHeight - elmHeight);
-                                        }
-                                        return adjustment;
-                                    }, 
-                                    operation:function(itemWidth,icemanDoneWithTimeout){
-                                        doThis.apply(null,arguments)
-                                    },
-                                    
-                                                                       
-                                });
+                            var iceScrollHelper = function(doThis){
+
+                                if(isAndroid()){
+                                    doThis(100,function(){});
+                                } else {
+
+                                    theClone = iceScrollService({
+                                        $scrollArea:$scrollArea,
+                                        itemArray:state.resultsArray,
+                                        itemSelector:'.infinitizerItem',
+                                        innerWrapSelector:'.infinitizerInner',
+                                        scrollContainerHeight:containerHeight,
+                                        scrollHeight:scrollHeight,
+                                        elmHeight:elmHeight,
+                                        scrollPos:state.scrollPos,
+                                        columns:config.columns,
+                                        iceScrollDoneFun:function(){
+                                            theClone = $();
+                                        },
+                                        getInnerWidthFun:function(){
+                                            // return $infinitizerInner.width();
+                                            return '100%';
+                                        },
+                                        getItemHeightFun:function(i,itemArray){
+                                            var heightPropertyName = config.name + '_LastHeight';
+                                            return itemArray[i].repeatItem[heightPropertyName];
+                                        },
+                                        getAdjustment:function(){
+                                            var adjustment = 96;
+                                            if(!scrollAreaIsElm){
+                                                adjustment += (scrollHeight - elmHeight);
+                                            }
+                                            return adjustment;
+                                        }, 
+                                        operation:function(itemWidth,iceScrollDoneWithTimeout){
+                                            doThis.apply(null,arguments)
+                                        },
+                                        
+                                                                           
+                                    });
+                                }
+                            };
+
+
+
+
+
+                            $scope.infinitizer.loadMoreTopClick = function(){
+                                restoreToTop()
                             };
 
                             var restoreToTop = function(){
-
+                                // timeoutMasterService.clear(); //doINeedThis
                                 
 
 
@@ -727,7 +876,7 @@ var infinitizerModule = (function(){
                                 //==========
                                 //==========
 
-                                iceManHelper(function(itemWidth,icemanDoneWithTimeout){
+                                iceScrollHelper(function(itemWidth,iceScrollDoneWithTimeout){
 
                                     var beforeHeight = $resultsList.height();
                                     var amt = Math.ceil(Math.min(state.topArchive.length,maxItems/3));
@@ -737,30 +886,32 @@ var infinitizerModule = (function(){
                                     amt = amt * 2 >= state.topArchive.length ? state.topArchive.length : amt;
 
 
-                                    $scope.$apply(function(){
+                                    // $scope.$apply(function(){//doINeedThis
                                         for(var i=0; i<amt;i++){
                                             state.resultsArray.push(state.topArchive[state.topArchive.length - 1 - i]);
                                         }
                                         state.topArchive.splice(state.topArchive.length - amt,amt);
-                                    });
+                                    // });//doINeedThis
+                                    screenReadyService(function(){//doINeedThis
                                     var afterHeight = $resultsList.height();
                                     var heightDif = afterHeight - beforeHeight;
 
                                
 
                                     var toUnshift = state.resultsArray.splice(state.resultsArray.length - (amt),amt);
-                                    $scope.$apply(function(){
+                                    // $scope.$apply(function(){
                                         for(var i=0,l=toUnshift.length; i<l;i++){
                                             state.resultsArray.unshift(toUnshift[i])
                                         }
                                         removeFromBottom(amt);
                                         changeScroll(heightDif + state.scrollPos);
-                                        screenReadyService(function(){
+                                        $timeout(function(){
+                                            console.log('doneddds')
+                                            iceScrollDoneWithTimeout();
                                             
-                                            icemanDoneWithTimeout();
-                                            
-                                        });
-                                    });
+                                        },1000);
+                                    // });
+                                    });//doINeedThis
                                 });
 
 
@@ -769,7 +920,7 @@ var infinitizerModule = (function(){
                             };
 
 
-                            var statusDisplays = makeStatusDisplayService($scope,$resultsList,restoreToTop,$infinitizerStatusInitializing);
+                            var statusDisplays = makeStatusDisplayService($scope,$resultsList,restoreToTop);
                             /*
                                 {
                                     loadMoreBottomButton:loadMoreBottomButton,
@@ -783,9 +934,9 @@ var infinitizerModule = (function(){
                                     for(var i = archiveQueue.length; i--; ){
                                         state.bottomArchive.unshift(archiveQueue[i]);
                                     }
-                                    if(!destroyed){
-                                    statusDisplays.allButtonsManage();
-                                    }
+                                    // if(!destroyed){
+                                    // statusDisplays.allButtonsManage();
+                                    // }
                                 }
                             };
                             
@@ -804,7 +955,7 @@ var infinitizerModule = (function(){
                                     needToReset
                                 ){
                                     timeoutMasterService.clear();
-                                    isRunning_restoreToBottomTimeoutRecursive = false;
+                                    $scope.infinitizer.isRunning_restoreToBottomTimeoutRecursive = false;
                                     theClone.remove();
                                     theClone = $();
                                     intialIsDone_fetchMoreIfNeeded = false;
@@ -817,7 +968,7 @@ var infinitizerModule = (function(){
                                     state.resultsArray = [];
                                     state.bottomArchive = [];
                                     state.topArchive = [];
-                                    statusDisplays.allButtonsManage(true);
+                                    // statusDisplays.allButtonsManage(true);
                                     restoreToBottom();
 
                                 }
@@ -847,7 +998,7 @@ var infinitizerModule = (function(){
                             
                             
 
-                            var isRunning_restoreToBottomTimeoutRecursive = false;
+                            $scope.infinitizer.isRunning_restoreToBottomTimeoutRecursive = false;
                             var maxItems = null;
                             var wasBusy = false;
                             var afterRestoreToBottom = function(){
@@ -884,7 +1035,7 @@ var infinitizerModule = (function(){
                                 }
                             }
                             var restoreToBottom = function(bottomArchiveHasInitialItems){
-                                if(isRunning_restoreToBottomTimeoutRecursive === false){
+                                if($scope.infinitizer.isRunning_restoreToBottomTimeoutRecursive === false){
                                     
 
                                     if(!bottomArchiveHasInitialItems && !$scope.isAtTheEndOfResponses){
@@ -910,13 +1061,13 @@ var infinitizerModule = (function(){
                                         resetCleanup();
                                         resetCleanup = function(){};
 
-                                        isRunning_restoreToBottomTimeoutRecursive = true;
-                                        statusDisplays.allButtonsManage();
+                                        $scope.infinitizer.isRunning_restoreToBottomTimeoutRecursive = true;
+                                        // statusDisplays.allButtonsManage();
 
 
                                         var doSimpleWay = true;
 
-                                        if($ && $.ua && $.ua.os && $.ua.os.name === 'Android'){
+                                        if(isAndroid() && !isAndroid4dot0()){
                                             doSimpleWay = false;
                                         }
 
@@ -927,11 +1078,14 @@ var infinitizerModule = (function(){
                                             }
                                             $scope.infinitizer.state.bottomArchive.splice(0,amt);
 
-                                            statusDisplays.allButtonsManage();
+                                            // statusDisplays.allButtonsManage();
 
-                                            isRunning_restoreToBottomTimeoutRecursive = false;
+                                            $scope.infinitizer.isRunning_restoreToBottomTimeoutRecursive = false;
 
-                                            
+                                            /*//doINeedThis
+                                            if(typeof containerHeight === 'undefined'){//broken in deployment but not locally???  this fixes it
+                                                containerHeight = $scrollArea.outerHeight();
+                                            }*/
                                             afterRestoreToBottom();
 
                                             if(wasBusy === true){
@@ -942,10 +1096,10 @@ var infinitizerModule = (function(){
                                         
                                         var complexWay = function(){
 
-                                            var idealChunkAmt = 8;
+                                            var idealChunkAmt = 3;
                                             
-                                            var oldWay = true;
-                                            var waitAmt = 1000;
+                                            var oldWay = false;
+                                            var waitAmt = 10;
 
                                             timeoutRecursiveService(
                                                 Math.ceil(amt/idealChunkAmt),
@@ -975,14 +1129,14 @@ var infinitizerModule = (function(){
                                                         
                                                     }
 
-                                                    statusDisplays.allButtonsManage();
+                                                    // statusDisplays.allButtonsManage();
 
                                                     
                                                 },
                                                 function(i){
-                                                    isRunning_restoreToBottomTimeoutRecursive = false;
+                                                    $scope.infinitizer.isRunning_restoreToBottomTimeoutRecursive = false;
 
-                                                    statusDisplays.allButtonsManage();
+                                                    // statusDisplays.allButtonsManage();
 
                                                     afterRestoreToBottom();
 
@@ -1033,6 +1187,7 @@ var infinitizerModule = (function(){
                                     } else {
                                         processedResults = response;
                                     }
+
                                     
                                     if(typeof cb !== 'undefined'){
                                         cb(processedResults,state.constraints);
@@ -1048,9 +1203,12 @@ var infinitizerModule = (function(){
 
                                 if(processedResults.length > 0){
                                     for(var i =0, l = processedResults.length; i<l; i++ ){
-                                        state.bottomArchive.push(processedResults[i])
+                                        state.bottomArchive.push({
+                                            repeatIndex:repeatIndex++,
+                                            repeatItem: processedResults[i]
+                                        })
                                     }
-                                    statusDisplays.allButtonsManage();
+                                    // statusDisplays.allButtonsManage();
                                     constraints.offset = constraints.offset + processedResults.length;
                                     screenReadyService(function endpointCallHandlerscreenReadyService(){
                                         $scope.infinitizer.fetching = false;
@@ -1060,7 +1218,7 @@ var infinitizerModule = (function(){
                                     console.log('SERVER RESPONDED WITH ZERO RESULTS');
                                     $scope.infinitizer.fetching = false;
                                     $scope.isAtTheEndOfResponses = true;
-                                    statusDisplays.allButtonsManage();
+                                    // statusDisplays.allButtonsManage();
 
                                     
                                 }                     
@@ -1070,6 +1228,7 @@ var infinitizerModule = (function(){
                                 windowService.onResize(function(){
                                     var deb = debounceMasterService.manage('resizeDeb'+config.name,function(){
                                         needsWidthAdjust = true;
+                                        console.log('RESIZE')
                                         fetchMoreIfNeeded();
                                     },1000,true,$scope);   
                                 },$scope);
@@ -1146,8 +1305,8 @@ var infinitizerModule = (function(){
 
 
                                         var adjustment = 0;
-                                        adjustment += statusDisplays.loadMoreTopButton.showing ? statusDisplays.loadMoreTopButton.height : 0;
-                                        adjustment += statusDisplays.loadMoreBottomButton.showing ? statusDisplays.loadMoreBottomButton.height : 0;
+                                        // adjustment += statusDisplays.loadMoreTopButton.showing ? statusDisplays.loadMoreTopButton.height : 0;
+                                        // adjustment += statusDisplays.loadMoreBottomButton.showing ? statusDisplays.loadMoreBottomButton.height : 0;
 
                                         scrollHeight = $scrollArea.prop('scrollHeight');
                                         if(!scrollAreaIsElm){elmHeight = $elm.outerHeight();}
@@ -1163,14 +1322,14 @@ var infinitizerModule = (function(){
                                         var aLength = state.resultsArray.length;
                                         var totalCount = aLength;
                                         for(var i=0,l=aLength;i<l;i++){
-                                            var itemHeight = state.resultsArray[i][heightPropertyName];
-                                            var itemWidth = state.resultsArray[i][widthPropertyName];
+                                            var itemHeight = state.resultsArray[i].repeatItem[heightPropertyName];
+                                            var itemWidth = state.resultsArray[i].repeatItem[widthPropertyName];
                                             if(config.magicColumns && needsWidthAdjust){
                                                 needsWidthAdjust = false;
                                                 config.columns = Math.floor((infinitizerInnerWidth) /(itemWidth - 1));
                                             }
                                             if(typeof itemHeight === 'number'){
-                                                allHeights += state.resultsArray[i][heightPropertyName];
+                                                allHeights += state.resultsArray[i].repeatItem[heightPropertyName];
                                             } else {
                                                 totalCount --;
                                                 // log('why no height?',state.resultsArray[i][heightPropertyName],state.resultsArray[i])
@@ -1190,7 +1349,8 @@ var infinitizerModule = (function(){
                                         numberToRequest = Math.max(Math.ceil(amtItemsToFillDeficit),0);
                                         if(typeof containerHeight !== 'undefined' && averageItemHeight !== 0){
                                             var itemsPerScreenHypothetical = (containerHeight/averageItemHeight) * config.columns;
-                                            maxItems = Math.floor(itemsPerScreenHypothetical * config.maxScreens);
+                                            // maxItems = Math.floor((itemsPerScreenHypothetical * config.maxScreens)/config.columns);
+                                            maxItems = Math.floor((itemsPerScreenHypothetical * config.maxScreens));
                                             maxItems -= (maxItems % config.columns);
                                         }
                                         // console.log('containerHeight',containerHeight)
@@ -1237,7 +1397,7 @@ var infinitizerModule = (function(){
                                 var losersBottom = [];
                                 var lastOneFound = false;
                                 var totalHeight = 0;
-                                var adjustment = statusDisplays.loadMoreTopButton.showing ? statusDisplays.loadMoreTopButton.height : 0;
+                                var adjustment = 0;
 
                                 adjustment += !scrollAreaIsElm ? (scrollHeight - elmHeight) : adjustment;
 
@@ -1258,13 +1418,13 @@ var infinitizerModule = (function(){
 
 
                                     //only the first of each row contribute to totalHeight
-                                    totalHeight = columnIndex === 0 ? totalHeight + user[heightPropertyName] : totalHeight; 
+                                    totalHeight = columnIndex === 0 ? totalHeight + user.repeatItem[heightPropertyName] : totalHeight; 
 
                                     if(config.magicColumns){
                                         userPos = columnTotalHeights[columnIndex] ? columnTotalHeights[columnIndex] : 0;
 
                                         columnTotalHeights[columnIndex] = columnTotalHeights[columnIndex] ? columnTotalHeights[columnIndex] : 0;
-                                        columnTotalHeights[columnIndex] += user[heightPropertyName];
+                                        columnTotalHeights[columnIndex] += user.repeatItem[heightPropertyName];
 
                                         totalHeight = columnTotalHeights[columnIndex];
                                     }
@@ -1389,9 +1549,19 @@ var infinitizerModule = (function(){
                                 return winnersAndLosersObject;
                             };
 
+                            var $scrollWrapInnerAsdf = $();
+                            if(!scrollAreaIsElm){
+                                $scrollArea.wrapInner('<div class="scrollWrapInnerAsdf"></div>');
+                                $scrollWrapInnerAsdf = $scrollArea.find('.scrollWrapInnerAsdf')
+                            }
+
+                            var $shoveReceiver = scrollAreaIsElm ? $infinitizerInner : $scrollWrapInnerAsdf;
                             
 
                             var theClone = $();
+
+                            var paddingTopShove = 0;
+
                             var killLosersAndAdjust = function(cb){     
                                 if(theClone.length === 0 && state.bottomArchive.length !== 0){
                                     var cachedCb;
@@ -1400,24 +1570,44 @@ var infinitizerModule = (function(){
                                     
                                     if(winnersAndLosersObject.losersTop.length > 0){
                                         cachedCb = cb;
-                                        iceManHelper(function(itemWidth,icemanDoneWithTimeout){
+                                        iceScrollHelper(function(itemWidth,iceScrollDoneWithTimeout){
 
                                             generateWinnersAndLosersObject_thenProcessStateArrays(winnersAndLosersObject);
                                             
                                             if(winnersAndLosersObject.losersTop.length > 0){
                                                
-                                                $scrollArea.css({
-                                                    'overflow-y':'hidden',
-                                                    'width': itemWidth
-                                                });
-                                                changeScroll(winnersAndLosersObject.winnerAmountAboveTop)
-                                                screenReadyService(function(){
+                                                if(!isAndroid()){
                                                     $scrollArea.css({
-                                                        'overflow-y':'',
-                                                        'width': ''
+                                                        'overflow-y':'hidden',
+                                                        'width': itemWidth
                                                     });
-                                                    icemanDoneWithTimeout();
-                                                });
+                                                }
+
+                                                if(isAndroid()){
+                                                    var heightPropertyName = config.name + '_LastHeight';
+                                                    var topLosersCollectiveHeight = 0;
+                                                    for(var i=0,l=winnersAndLosersObject.losersTop.length;i<l;i++){
+                                                        if(i % config.columns === 0){
+                                                            topLosersCollectiveHeight += winnersAndLosersObject.losersTop[i].repeatItem[heightPropertyName];
+                                                        }
+                                                    }
+                                                    paddingTopShove += topLosersCollectiveHeight;
+                                                    $shoveReceiver.css('padding-top',paddingTopShove)
+                                                }
+
+                                                if(!isAndroid()){
+                                                    changeScroll(winnersAndLosersObject.winnerAmountAboveTop)
+
+                                                    screenReadyService(function(){
+                                                        $scrollArea.css({
+                                                            'overflow-y':'',
+                                                            'width': ''
+                                                        });
+                                                        iceScrollDoneWithTimeout();
+                                                    });
+                                                }
+                                                
+                                                
                                                 
                                                 if(cachedCb){
                                                     cachedCb()
@@ -1459,9 +1649,33 @@ var infinitizerModule = (function(){
                                 },1000,true,$scope); 
                             });
                             */
+
+                            $scope.infinitizer.loadMoreBottomClick = function(){
+                                var deb = debounceMasterService.manage('master',function(){
+                                    fetchMoreIfNeeded();
+                                    // changeScroll(state.scrollPos)
+                                    console.log('loadMoreClick')
+                                },100,true,$scope); 
+                            };
+
+                            $scope.paddingTopShove = null;
+
                             $scrollArea.on('scroll',function(e){
                                 
                                 state.scrollPos = dhUtil.getYOffset($scrollArea);
+
+
+                                if(isAndroid() && state.scrollPos < paddingTopShove){
+                                    paddingTopShove = state.scrollPos;
+                                    $shoveReceiver.css('padding-top',paddingTopShove);
+                                    $scope.paddingTopShove = paddingTopShove;
+                                    if($scope.pullToRefreshScope){
+                                        $scope.pullToRefreshScope.infinitizerInitializing = false;
+                                        $scope.pullToRefreshScope.paddingTopShove = paddingTopShove;
+                                    }
+                                }
+
+
                                 if(window.lastScrollTime && window.lastScrollTime.set){
                                     window.lastScrollTime.set({date:new Date(),pos:state.scrollPos,context:'infinitizer-'+config.name});
                                 }
@@ -1476,11 +1690,11 @@ var infinitizerModule = (function(){
                                 var startingTopArchiveLength = state.topArchive.length;
                                 generateWinnersAndLosersObject_thenProcessStateArrays();
                                 var endingTopArchiveLength = state.topArchive.length;
-                                if(startingTopArchiveLength === 0 && endingTopArchiveLength !== 0){
+                                /*if(startingTopArchiveLength === 0 && endingTopArchiveLength !== 0){
                                     //when no topLoadingButton before destroy, 
                                     //but chopTopOnDestroy yields toLoadingButton when returning to infinitizer
                                     state.scrollPos += statusDisplays.loadMoreTopButton.height;
-                                }
+                                }*/
                                 timeoutMasterService.clear();
                             })
                         })
